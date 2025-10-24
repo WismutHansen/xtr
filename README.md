@@ -211,4 +211,4 @@ just fix -p xtr-cli
 
 ## License
 
-[Add license information]
+MIT License
