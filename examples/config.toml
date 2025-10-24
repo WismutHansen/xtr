@@ -1,0 +1,77 @@
+# XTR structured extraction engine example configuration.
+# Copy this file to $XDG_CONFIG_HOME/xtr/config.toml (or ~/.config/xtr/config.toml)
+# to customize defaults. Values support environment variable expansion like
+# $XDG_CONFIG_HOME and home expansion via ~.
+
+[models.defaults.teacher]
+name = "llama-teacher"
+base_url = "http://localhost:8080/v1"
+api_key = "not_needed"
+adapter = "chat"
+
+[models.defaults.student]
+name = "llama-student"
+base_url = "http://localhost:8081/v1"
+api_key = "not_needed"
+adapter = "chat"
+
+[[models.defaults.fallbacks]]
+name = "llama-backup"
+base_url = "http://localhost:8082/v1"
+api_key = "not_needed"
+adapter = "chat"
+
+# Optional per-task overrides. Keys correspond to task identifiers.
+[models.tasks."invoice_extraction"]
+teacher.name = "mixtral-teacher"
+teacher.base_url = "http://localhost:8090/v1"
+student.name = "mxb-student"
+student.base_url = "http://localhost:8091/v1"
+
+[[models.tasks."invoice_extraction".fallbacks]]
+name = "mixtral-guard"
+base_url = "http://localhost:8092/v1"
+
+[storage]
+# Override storage directories if desired; otherwise defaults use XDG env vars.
+# data_dir = "~/Library/Application Support/xtr"
+# state_dir = "~/.local/state/xtr"
+# cache_dir = "$XDG_STATE_HOME/xtr/cache"
+
+[mlflow]
+# MLflow experiment tracking (optional). Enable the 'mlflow' feature to use this.
+# tracking_uri = "http://localhost:5000"
+# experiment_name = "xtr-optimization"
+
+# Local logging always writes structured logs to disk (enabled by default)
+local_logging = true
+# log_dir = "~/.local/state/xtr/optimization_logs"  # Optional, defaults to XDG_STATE_HOME/xtr/optimization_logs
+
+[optimization.defaults]
+iterations = 4
+rollouts_per_iteration = 6
+max_lm_calls = 32
+batch_size = 4
+
+[optimization.defaults.feedback_models.teacher]
+name = "llama-feedback"
+base_url = "http://localhost:8085/v1"
+
+[optimization.tasks."invoice_extraction"]
+iterations = 6
+rollouts_per_iteration = 8
+max_lm_calls = 48
+
+[tasks."invoice_extraction"]
+schema = "~/data/xtr/schemas/invoice.json"
+examples = "~/data/xtr/examples/invoice"
+description = "Extract structured invoice metadata from scanned PDFs."
+# include_timestamp adds current date/time to the model's context (default: false)
+include_timestamp = false
+
+[tasks."troubleshooting_report"]
+schema = "$XDG_DATA_HOME/xtr/schemas/troubleshooting.json"
+examples = "$XDG_DATA_HOME/xtr/examples/troubleshooting"
+description = "Summarize troubleshooting steps and outcomes from field reports."
+# include_timestamp adds current date/time to the model's context (default: false)
+include_timestamp = true

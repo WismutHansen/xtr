@@ -1,0 +1,14 @@
+input_text = """
+Hey! Dinner tomorrow at Bella Trattoria, 7pm. Can you make it?
+"""
+
+expected_json = """{
+  "event_name": "Dinner at Bella Trattoria",
+  "date_time": {
+    "start_time": "7:00 PM"
+  },
+  "location": {
+    "type": "physical",
+    "venue_name": "Bella Trattoria"
+  }
+}"""

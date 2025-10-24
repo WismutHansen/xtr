@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Meeting Notes Schema",
+  "description": "Structured information extracted from meeting transcripts or notes",
+  "properties": {
+    "meeting_metadata": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Meeting title or subject"
+        },
+        "date": {
+          "type": "string",
+          "description": "Meeting date"
+        },
+        "duration": {
+          "type": "string",
+          "description": "Meeting duration"
+        },
+        "attendees": {
+          "type": "array",
+          "description": "List of participants",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "description": "Brief overview of the meeting"
+    },
+    "key_discussion_points": {
+      "type": "array",
+      "description": "Main topics discussed",
+      "items": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "Discussion topic"
+          },
+          "details": {
+            "type": "string",
+            "description": "Key points or conclusions"
+          }
+        },
+        "required": ["topic"]
+      }
+    },
+    "decisions_made": {
+      "type": "array",
+      "description": "Decisions reached during the meeting",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "description": "The decision"
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Reasoning behind the decision"
+          }
+        },
+        "required": ["decision"]
+      }
+    },
+    "action_items": {
+      "type": "array",
+      "description": "Tasks assigned during the meeting",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "type": "string",
+            "description": "Description of the task"
+          },
+          "assignee": {
+            "type": "string",
+            "description": "Person responsible"
+          },
+          "due_date": {
+            "type": "string",
+            "description": "Deadline for completion"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["high", "medium", "low"],
+            "description": "Task priority"
+          }
+        },
+        "required": ["task", "assignee"]
+      }
+    },
+    "questions_raised": {
+      "type": "array",
+      "description": "Open questions or issues requiring follow-up",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "The question or issue"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Person responsible for finding the answer"
+          }
+        },
+        "required": ["question"]
+      }
+    },
+    "next_steps": {
+      "type": "array",
+      "description": "General next steps or follow-up items",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_meeting": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": "Date of next meeting"
+        },
+        "agenda": {
+          "type": "string",
+          "description": "Proposed agenda for next meeting"
+        }
+      }
+    }
+  },
+  "required": ["summary"]
+}

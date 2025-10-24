@@ -1,0 +1,92 @@
+input_text = """
+Kostenfreies Webinar: Einführung in Python Programmierung
+
+Mittwoch, 12. März 2025
+19:00 - 20:30 Uhr (MEZ)
+
+Online via Zoom
+Link wird nach Anmeldung verschickt
+Teilnahme-Code: 111-222-333
+
+Referentin: Dr. Sarah Klein, Informatikerin und Autorin
+Moderation: Max Huber
+
+Themen:
+19:00 - Willkommen und Einführung
+19:10 - Was ist Python? (20 Min)
+19:30 - Erste Schritte und Syntax (30 Min)
+20:00 - Live-Coding-Demo (20 Min)
+20:20 - Fragen & Antworten (10 Min)
+
+Kostenlos | Max. 200 Teilnehmer
+Anmeldung erforderlich bis 11. März: webinar@codecademy.de
+
+Aufzeichnung verfügbar für registrierte Teilnehmer
+
+Code Academy Deutschland
+webinar@codecademy.de
+"""
+
+expected_json = """{
+  "event_name": "Einführung in Python Programmierung",
+  "event_type": "webinar",
+  "date_time": {
+    "start_date": "2025-03-12",
+    "start_time": "7:00 PM",
+    "end_time": "8:30 PM",
+    "timezone": "MEZ",
+    "all_day": false
+  },
+  "location": {
+    "type": "virtual",
+    "meeting_id": "111-222-333"
+  },
+  "organizer": {
+    "name": "Code Academy Deutschland",
+    "email": "webinar@codecademy.de"
+  },
+  "attendees": [
+    {
+      "name": "Dr. Sarah Klein",
+      "role": "speaker"
+    },
+    {
+      "name": "Max Huber",
+      "role": "moderator"
+    }
+  ],
+  "agenda": [
+    {
+      "time": "7:00 PM",
+      "topic": "Willkommen und Einführung"
+    },
+    {
+      "time": "7:10 PM",
+      "topic": "Was ist Python?",
+      "duration": "20 min"
+    },
+    {
+      "time": "7:30 PM",
+      "topic": "Erste Schritte und Syntax",
+      "duration": "30 min"
+    },
+    {
+      "time": "8:00 PM",
+      "topic": "Live-Coding-Demo",
+      "duration": "20 min"
+    },
+    {
+      "time": "8:20 PM",
+      "topic": "Fragen & Antworten",
+      "duration": "10 min"
+    }
+  ],
+  "registration": {
+    "required": true,
+    "deadline": "2025-03-11",
+    "fee": "Kostenlos",
+    "capacity": 200
+  },
+  "tags": ["python", "programmierung", "webinar"],
+  "special_instructions": "Aufzeichnung verfügbar für registrierte Teilnehmer. Link wird nach Anmeldung verschickt."
+}"""

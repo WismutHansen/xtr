@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Email Triage Schema",
+  "description": "Structured analysis for email classification and prioritization",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "urgent_action_required",
+        "action_required",
+        "information",
+        "spam",
+        "newsletter",
+        "automated_notification",
+        "personal",
+        "other"
+      ],
+      "description": "Primary email category"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Priority level"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": ["positive", "neutral", "negative", "urgent"],
+      "description": "Overall sentiment or tone"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Brief 1-2 sentence summary of email content"
+    },
+    "action_items": {
+      "type": "array",
+      "description": "Specific actions requested or required",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Description of the action"
+          },
+          "deadline": {
+            "type": "string",
+            "description": "Deadline if mentioned"
+          }
+        },
+        "required": ["action"]
+      }
+    },
+    "key_entities": {
+      "type": "object",
+      "properties": {
+        "people": {
+          "type": "array",
+          "description": "Important people mentioned",
+          "items": {
+            "type": "string"
+          }
+        },
+        "organizations": {
+          "type": "array",
+          "description": "Companies or organizations mentioned",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dates": {
+          "type": "array",
+          "description": "Important dates mentioned",
+          "items": {
+            "type": "string"
+          }
+        },
+        "amounts": {
+          "type": "array",
+          "description": "Financial amounts mentioned",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "suggested_response": {
+      "type": "string",
+      "enum": ["reply", "forward", "schedule_meeting", "no_response_needed", "delegate"],
+      "description": "Recommended response type"
+    },
+    "tags": {
+      "type": "array",
+      "description": "Relevant tags for organization",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["category", "priority", "summary"]
+}

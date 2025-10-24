@@ -1,0 +1,111 @@
+input_text = """
+Betreff: Einladung zur Jahreshauptversammlung 2025
+
+Sehr geehrte Damen und Herren,
+
+hiermit laden wir Sie herzlich zu unserer Jahreshauptversammlung ein.
+
+Datum: Freitag, 14. März 2025
+Uhrzeit: 14:00 - 17:00 Uhr (MEZ)
+Ort: Hotel Adlon Kempinski, Festsaal
+Unter den Linden 77, 10117 Berlin
+
+Für Remote-Teilnehmer: https://webex.com/de/jahresversammlung2025
+Meeting-Kennung: 456 789 123
+
+Tagesordnung:
+14:00 - Begrüßung und Jahresbericht (Dr. Klaus Müller, Vorstandsvorsitzender)
+14:30 - Finanzbericht 2024 (Maria Schmidt, CFO)
+15:15 - Kaffeepause
+15:30 - Strategie 2025-2027 (Thomas Weber, COO)
+16:15 - Abstimmungen und Beschlüsse
+16:45 - Verschiedenes und Schlusswort
+
+Bitte bestätigen Sie Ihre Teilnahme bis zum 7. März an sekretariat@unternehmen.de
+
+Anmeldung erforderlich. Plätze vor Ort begrenzt auf 150 Personen.
+
+Mit freundlichen Grüßen
+Anna Hoffmann
+Veranstaltungsmanagement
+a.hoffmann@unternehmen.de
++49 30 1234567
+"""
+
+expected_json = """{
+  "event_name": "Jahreshauptversammlung 2025",
+  "event_type": "meeting",
+  "date_time": {
+    "start_date": "2025-03-14",
+    "start_time": "2:00 PM",
+    "end_time": "5:00 PM",
+    "timezone": "MEZ",
+    "all_day": false
+  },
+  "location": {
+    "type": "hybrid",
+    "venue_name": "Hotel Adlon Kempinski",
+    "address": "Unter den Linden 77, 10117 Berlin",
+    "room": "Festsaal",
+    "virtual_link": "https://webex.com/de/jahresversammlung2025",
+    "meeting_id": "456 789 123"
+  },
+  "organizer": {
+    "name": "Anna Hoffmann",
+    "email": "a.hoffmann@unternehmen.de",
+    "phone": "+49 30 1234567",
+    "organization": "Veranstaltungsmanagement"
+  },
+  "attendees": [
+    {
+      "name": "Dr. Klaus Müller",
+      "role": "speaker"
+    },
+    {
+      "name": "Maria Schmidt",
+      "role": "speaker"
+    },
+    {
+      "name": "Thomas Weber",
+      "role": "speaker"
+    }
+  ],
+  "agenda": [
+    {
+      "time": "2:00 PM",
+      "topic": "Begrüßung und Jahresbericht",
+      "speaker": "Dr. Klaus Müller"
+    },
+    {
+      "time": "2:30 PM",
+      "topic": "Finanzbericht 2024",
+      "speaker": "Maria Schmidt"
+    },
+    {
+      "time": "3:15 PM",
+      "topic": "Kaffeepause"
+    },
+    {
+      "time": "3:30 PM",
+      "topic": "Strategie 2025-2027",
+      "speaker": "Thomas Weber"
+    },
+    {
+      "time": "4:15 PM",
+      "topic": "Abstimmungen und Beschlüsse"
+    },
+    {
+      "time": "4:45 PM",
+      "topic": "Verschiedenes und Schlusswort"
+    }
+  ],
+  "registration": {
+    "required": true,
+    "capacity": 150
+  },
+  "rsvp": {
+    "required": true,
+    "deadline": "2025-03-07",
+    "contact": "sekretariat@unternehmen.de"
+  }
+}"""

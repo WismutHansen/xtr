@@ -1,0 +1,38 @@
+input_text = """
+@channel Team-Event nächste Woche!
+
+Wir gehen zusammen bowlen 🎳
+
+Wann: Donnerstag, 20.02.2025, ab 18:30 Uhr
+Wo: Bowling World, Hauptstraße 123, Hamburg
+
+Bitte bis Montag Bescheid geben ob ihr dabei seid!
+Max 20 Leute, wer zuerst kommt...
+
+Kosten: 15€ pro Person (inkl. Schuhe und 2 Getränke)
+
+Lisa organisiert - Fragen an @lisa
+"""
+
+expected_json = """{
+  "event_name": "Team-Event Bowling",
+  "event_type": "social",
+  "date_time": {
+    "start_date": "2025-02-20",
+    "start_time": "6:30 PM"
+  },
+  "location": {
+    "type": "physical",
+    "venue_name": "Bowling World",
+    "address": "Hauptstraße 123, Hamburg"
+  },
+  "organizer": {
+    "name": "Lisa"
+  },
+  "registration": {
+    "fee": "15 €",
+    "capacity": 20
+  },
+  "tags": ["team-building", "social"],
+  "special_instructions": "Kosten inkl. Schuhe und 2 Getränke"
+}"""

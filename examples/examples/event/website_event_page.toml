@@ -1,0 +1,153 @@
+input_text = """
+AI & Ethics Symposium 2025
+Exploring the Intersection of Technology and Responsibility
+
+Join leading researchers, ethicists, policymakers, and industry leaders to discuss 
+the ethical implications of artificial intelligence in modern society.
+
+Event Details
+Date: June 15-16, 2025
+Time: 9:00 AM - 6:00 PM (Day 1) | 9:00 AM - 4:00 PM (Day 2)
+Venue: Stanford University, Memorial Auditorium
+551 Serra Mall, Stanford, CA 94305
+Format: Hybrid (In-person + Virtual Livestream)
+
+Keynote Speakers
+• Dr. Timnit Gebru - Founder, DAIR Institute
+• Prof. Stuart Russell - UC Berkeley Computer Science
+• Dr. Joy Buolamwini - Algorithmic Justice League
+• Yann LeCun - Chief AI Scientist, Meta
+
+Day 1 - June 15
+9:00 AM - Registration & Coffee
+10:00 AM - Opening Keynote: "The State of AI Ethics"
+11:30 AM - Panel: Bias and Fairness in Machine Learning
+1:00 PM - Lunch & Networking
+2:30 PM - Workshop: Implementing Ethical AI Frameworks
+4:00 PM - Lightning Talks
+6:00 PM - Reception
+
+Day 2 - June 16
+9:00 AM - Keynote: "AI Regulation and Policy"
+10:30 AM - Breakout Sessions
+12:00 PM - Lunch
+1:00 PM - Panel: Industry Perspectives
+2:30 PM - Closing Remarks
+
+Registration
+Early Bird (until May 1):
+Students: $99 | Academics: $299 | Industry: $499 | Virtual: $149
+
+Regular Price (after May 1):
+Students: $149 | Academics: $399 | Industry: $599 | Virtual: $199
+
+Limited capacity: 500 in-person attendees
+
+Organized by Stanford HAI (Human-Centered AI Institute)
+Contact: events@hai.stanford.edu | (650) 555-0100
+Parking: Campus Parking Structures ($15/day)
+
+COVID-19 Policy: Proof of vaccination required for in-person. Masks optional.
+
+Follow: @StanfordHAI #AIEthics2025
+"""
+
+expected_json = """{
+  "event_name": "AI & Ethics Symposium 2025",
+  "event_type": "conference",
+  "date_time": {
+    "start_date": "2025-06-15",
+    "start_time": "9:00 AM",
+    "end_date": "2025-06-16",
+    "end_time": "4:00 PM",
+    "all_day": false
+  },
+  "location": {
+    "type": "hybrid",
+    "venue_name": "Stanford University",
+    "address": "551 Serra Mall, Stanford, CA 94305",
+    "room": "Memorial Auditorium"
+  },
+  "organizer": {
+    "name": "Stanford HAI (Human-Centered AI Institute)",
+    "email": "events@hai.stanford.edu",
+    "phone": "(650) 555-0100"
+  },
+  "attendees": [
+    {
+      "name": "Dr. Timnit Gebru",
+      "role": "keynote speaker"
+    },
+    {
+      "name": "Prof. Stuart Russell",
+      "role": "keynote speaker"
+    },
+    {
+      "name": "Dr. Joy Buolamwini",
+      "role": "keynote speaker"
+    },
+    {
+      "name": "Yann LeCun",
+      "role": "keynote speaker"
+    }
+  ],
+  "description": "Symposium bringing together leading researchers, ethicists, policymakers, and industry leaders to discuss the ethical implications of artificial intelligence in modern society",
+  "agenda": [
+    {
+      "time": "9:00 AM",
+      "topic": "Registration & Coffee"
+    },
+    {
+      "time": "10:00 AM",
+      "topic": "Opening Keynote: The State of AI Ethics"
+    },
+    {
+      "time": "11:30 AM",
+      "topic": "Panel: Bias and Fairness in Machine Learning"
+    },
+    {
+      "time": "1:00 PM",
+      "topic": "Lunch & Networking"
+    },
+    {
+      "time": "2:30 PM",
+      "topic": "Workshop: Implementing Ethical AI Frameworks"
+    },
+    {
+      "time": "4:00 PM",
+      "topic": "Lightning Talks"
+    },
+    {
+      "time": "6:00 PM",
+      "topic": "Reception"
+    },
+    {
+      "time": "9:00 AM",
+      "topic": "Keynote: AI Regulation and Policy"
+    },
+    {
+      "time": "10:30 AM",
+      "topic": "Breakout Sessions"
+    },
+    {
+      "time": "12:00 PM",
+      "topic": "Lunch"
+    },
+    {
+      "time": "1:00 PM",
+      "topic": "Panel: Industry Perspectives"
+    },
+    {
+      "time": "2:30 PM",
+      "topic": "Closing Remarks"
+    }
+  ],
+  "registration": {
+    "required": true,
+    "deadline": "2025-05-01",
+    "fee": "Early bird - Students: $99, Academics: $299, Industry: $499, Virtual: $149. Regular - Students: $149, Academics: $399, Industry: $599, Virtual: $199",
+    "capacity": 500
+  },
+  "tags": ["AI", "ethics", "symposium"],
+  "special_instructions": "Parking available at Campus Parking Structures ($15/day). COVID-19 Policy: Proof of vaccination required for in-person attendance. Masks optional."
+}"""

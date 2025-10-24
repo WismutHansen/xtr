@@ -1,0 +1,105 @@
+input_text = """
+From: webinars@datasci.edu
+Subject: Webinar Registration Confirmation
+
+Thank you for registering!
+
+Introduction to Machine Learning
+Instructor: Prof. Robert Chen
+Moderator: Emma Watson
+
+Tuesday, February 10, 2025 | 2:00 PM - 3:30 PM UTC
+
+Join online: https://webinar.example.com/ml-intro
+Meeting ID: 987-654-321
+Phone: +1-800-555-0199
+
+Topics:
+• 2:05 PM - What is Machine Learning? (20 min)
+• 2:25 PM - Common ML Algorithms (30 min)
+• 2:55 PM - Real-world Applications (20 min)
+• 3:15 PM - Q&A Session (15 min)
+
+Materials (slides and resource list) available after the session.
+
+Capacity: 500 participants
+Registration deadline: February 9, 2025
+
+Session will be recorded and available to registered participants within 24 hours.
+
+DataScience Academy
+"""
+
+expected_json = """{
+  "event_name": "Introduction to Machine Learning",
+  "event_type": "webinar",
+  "date_time": {
+    "start_date": "2025-02-10",
+    "start_time": "2:00 PM",
+    "end_time": "3:30 PM",
+    "timezone": "UTC",
+    "all_day": false
+  },
+  "location": {
+    "type": "virtual",
+    "virtual_link": "https://webinar.example.com/ml-intro",
+    "meeting_id": "987-654-321",
+    "dial_in": "+1-800-555-0199"
+  },
+  "organizer": {
+    "name": "DataScience Academy",
+    "email": "webinars@datasci.edu"
+  },
+  "attendees": [
+    {
+      "name": "Prof. Robert Chen",
+      "role": "speaker"
+    },
+    {
+      "name": "Emma Watson",
+      "role": "moderator"
+    }
+  ],
+  "agenda": [
+    {
+      "time": "2:05 PM",
+      "topic": "What is Machine Learning?",
+      "speaker": "Prof. Robert Chen",
+      "duration": "20 min"
+    },
+    {
+      "time": "2:25 PM",
+      "topic": "Common ML Algorithms",
+      "speaker": "Prof. Robert Chen",
+      "duration": "30 min"
+    },
+    {
+      "time": "2:55 PM",
+      "topic": "Real-world Applications",
+      "speaker": "Prof. Robert Chen",
+      "duration": "20 min"
+    },
+    {
+      "time": "3:15 PM",
+      "topic": "Q&A Session",
+      "duration": "15 min"
+    }
+  ],
+  "registration": {
+    "required": true,
+    "deadline": "2025-02-09",
+    "capacity": 500
+  },
+  "attachments": [
+    {
+      "name": "Presentation slides",
+      "type": "slides"
+    },
+    {
+      "name": "Resource list",
+      "type": "handout"
+    }
+  ],
+  "tags": ["education", "machine-learning", "beginner"],
+  "special_instructions": "Session will be recorded and available to registered participants within 24 hours."
+}"""

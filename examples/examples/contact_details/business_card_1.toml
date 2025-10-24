@@ -1,0 +1,63 @@
+input_text = """
+Sarah Chen, PhD
+Chief Technology Officer
+Innovate Labs Inc.
+Engineering Division
+
+Email: sarah.chen@innovatelabs.com
+Mobile: +1 (555) 123-4567
+Office: +1 (555) 890-1234 ext. 101
+
+1234 Tech Boulevard, Suite 500
+San Francisco, CA 94105
+
+LinkedIn: linkedin.com/in/sarahchen
+GitHub: github.com/sarahchen
+"""
+
+expected_json = """{
+  "name": {
+    "full_name": "Sarah Chen",
+    "first_name": "Sarah",
+    "last_name": "Chen",
+    "suffix": "PhD"
+  },
+  "job_title": "Chief Technology Officer",
+  "company": {
+    "name": "Innovate Labs Inc.",
+    "department": "Engineering Division"
+  },
+  "email_addresses": [
+    {
+      "email": "sarah.chen@innovatelabs.com",
+      "type": "work",
+      "primary": true
+    }
+  ],
+  "phone_numbers": [
+    {
+      "number": "+1 (555) 123-4567",
+      "type": "mobile",
+      "primary": true
+    },
+    {
+      "number": "+1 (555) 890-1234",
+      "type": "work",
+      "extension": "101"
+    }
+  ],
+  "addresses": [
+    {
+      "type": "work",
+      "street": "1234 Tech Boulevard, Suite 500",
+      "city": "San Francisco",
+      "state": "CA",
+      "postal_code": "94105",
+      "full_address": "1234 Tech Boulevard, Suite 500, San Francisco, CA 94105"
+    }
+  ],
+  "social_media": {
+    "linkedin": "linkedin.com/in/sarahchen",
+    "github": "github.com/sarahchen"
+  }
+}"""

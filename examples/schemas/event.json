@@ -1,0 +1,245 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Event Extraction Schema",
+  "description": "Structured event information extracted from invitations, announcements, or descriptions",
+  "properties": {
+    "event_name": {
+      "type": "string",
+      "description": "Name or title of the event"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "meeting",
+        "conference",
+        "workshop",
+        "webinar",
+        "social",
+        "networking",
+        "training",
+        "presentation",
+        "other"
+      ],
+      "description": "Type or category of event"
+    },
+    "date_time": {
+      "type": "object",
+      "properties": {
+        "start_date": {
+          "type": "string",
+          "description": "Event start date (YYYY-MM-DD)"
+        },
+        "start_time": {
+          "type": "string",
+          "description": "Event start time"
+        },
+        "end_date": {
+          "type": "string",
+          "description": "Event end date (YYYY-MM-DD)"
+        },
+        "end_time": {
+          "type": "string",
+          "description": "Event end time"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "Timezone (e.g., EST, UTC, PST)"
+        },
+        "all_day": {
+          "type": "boolean",
+          "description": "Whether this is an all-day event"
+        }
+      },
+      "required": ["start_date"]
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["physical", "virtual", "hybrid"],
+          "description": "Location type"
+        },
+        "venue_name": {
+          "type": "string",
+          "description": "Name of venue or building"
+        },
+        "address": {
+          "type": "string",
+          "description": "Physical address"
+        },
+        "room": {
+          "type": "string",
+          "description": "Room number or name"
+        },
+        "virtual_link": {
+          "type": "string",
+          "description": "Video conference or streaming link"
+        },
+        "meeting_id": {
+          "type": "string",
+          "description": "Meeting ID or access code"
+        },
+        "dial_in": {
+          "type": "string",
+          "description": "Phone dial-in number"
+        }
+      }
+    },
+    "organizer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Organizer name"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Organizer email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Organizer phone number"
+        },
+        "organization": {
+          "type": "string",
+          "description": "Organizing company or department"
+        }
+      }
+    },
+    "attendees": {
+      "type": "array",
+      "description": "Expected or invited attendees",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Attendee name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Attendee email"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role (e.g., speaker, panelist, moderator)"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether attendance is required"
+          }
+        }
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "Event description or summary"
+    },
+    "agenda": {
+      "type": "array",
+      "description": "Event agenda or schedule",
+      "items": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "string",
+            "description": "Time for this agenda item"
+          },
+          "topic": {
+            "type": "string",
+            "description": "Topic or session name"
+          },
+          "speaker": {
+            "type": "string",
+            "description": "Speaker or presenter"
+          },
+          "duration": {
+            "type": "string",
+            "description": "Duration of this segment"
+          }
+        },
+        "required": ["topic"]
+      }
+    },
+    "registration": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "description": "Whether registration is required"
+        },
+        "deadline": {
+          "type": "string",
+          "description": "Registration deadline"
+        },
+        "link": {
+          "type": "string",
+          "description": "Registration URL"
+        },
+        "fee": {
+          "type": "string",
+          "description": "Registration fee or cost"
+        },
+        "capacity": {
+          "type": "number",
+          "description": "Maximum number of attendees"
+        }
+      }
+    },
+    "rsvp": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "description": "Whether RSVP is required"
+        },
+        "deadline": {
+          "type": "string",
+          "description": "RSVP deadline"
+        },
+        "contact": {
+          "type": "string",
+          "description": "Who to RSVP to"
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "description": "Event tags or categories",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "description": "Referenced documents or materials",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Document name"
+          },
+          "url": {
+            "type": "string",
+            "description": "Document URL or location"
+          },
+          "type": {
+            "type": "string",
+            "description": "Document type (e.g., agenda, slides, handout)"
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    "special_instructions": {
+      "type": "string",
+      "description": "Special notes or requirements (e.g., dress code, parking, materials to bring)"
+    }
+  },
+  "required": ["event_name", "date_time"]
+}

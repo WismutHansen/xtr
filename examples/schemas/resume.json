@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Resume Extraction Schema",
+  "description": "Structured candidate information extracted from resumes",
+  "properties": {
+    "personal_info": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full name"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number"
+        },
+        "location": {
+          "type": "string",
+          "description": "Current location or address"
+        },
+        "linkedin": {
+          "type": "string",
+          "description": "LinkedIn profile URL"
+        },
+        "website": {
+          "type": "string",
+          "description": "Personal website or portfolio URL"
+        }
+      },
+      "required": ["name"]
+    },
+    "summary": {
+      "type": "string",
+      "description": "Professional summary or objective"
+    },
+    "experience": {
+      "type": "array",
+      "description": "Work experience entries",
+      "items": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "description": "Company name"
+          },
+          "title": {
+            "type": "string",
+            "description": "Job title"
+          },
+          "start_date": {
+            "type": "string",
+            "description": "Start date (flexible format)"
+          },
+          "end_date": {
+            "type": "string",
+            "description": "End date or 'Present'"
+          },
+          "location": {
+            "type": "string",
+            "description": "Job location"
+          },
+          "responsibilities": {
+            "type": "array",
+            "description": "Key responsibilities and achievements",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["company", "title"]
+      }
+    },
+    "education": {
+      "type": "array",
+      "description": "Educational background",
+      "items": {
+        "type": "object",
+        "properties": {
+          "institution": {
+            "type": "string",
+            "description": "School or university name"
+          },
+          "degree": {
+            "type": "string",
+            "description": "Degree or certification earned"
+          },
+          "field_of_study": {
+            "type": "string",
+            "description": "Major or field of study"
+          },
+          "graduation_date": {
+            "type": "string",
+            "description": "Graduation date"
+          },
+          "gpa": {
+            "type": "string",
+            "description": "GPA if mentioned"
+          }
+        },
+        "required": ["institution", "degree"]
+      }
+    },
+    "skills": {
+      "type": "array",
+      "description": "Technical and professional skills",
+      "items": {
+        "type": "string"
+      }
+    },
+    "certifications": {
+      "type": "array",
+      "description": "Professional certifications",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Certification name"
+          },
+          "issuer": {
+            "type": "string",
+            "description": "Issuing organization"
+          },
+          "date": {
+            "type": "string",
+            "description": "Date obtained"
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    "languages": {
+      "type": "array",
+      "description": "Language proficiencies",
+      "items": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "type": "string",
+            "description": "Language name"
+          },
+          "proficiency": {
+            "type": "string",
+            "description": "Proficiency level (e.g., Native, Fluent, Intermediate)"
+          }
+        },
+        "required": ["language"]
+      }
+    }
+  },
+  "required": ["personal_info"]
+}

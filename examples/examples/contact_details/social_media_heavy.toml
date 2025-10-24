@@ -1,0 +1,88 @@
+input_text = """
+Alex Taylor
+Freelance Designer & Content Creator
+Based in London, UK
+
+Get in touch:
+✉️  alex.taylor.design@gmail.com
+📱 +44 7700 900123
+
+Find me online:
+🔗 LinkedIn: linkedin.com/in/alextaylordesign
+🐦 Twitter/X: @alextaylorUK
+📸 Instagram: @alextaylordesigns
+💼 Portfolio: www.alextaylordesign.co.uk
+🎨 Behance: behance.net/alextaylor
+📌 Pinterest: pinterest.com/alextayloruk
+
+💬 Message me:
+Slack: @alextaylor
+Discord: alextaylor#1234
+Skype: live:alex.taylor.design
+
+Available: Mon-Thu 10am-6pm GMT
+Preferred method: Email or LinkedIn DM
+
+Languages: English (native), French (intermediate)
+"""
+
+expected_json = """{
+  "name": {
+    "full_name": "Alex Taylor",
+    "first_name": "Alex",
+    "last_name": "Taylor"
+  },
+  "job_title": "Freelance Designer & Content Creator",
+  "email_addresses": [
+    {
+      "email": "alex.taylor.design@gmail.com",
+      "type": "personal",
+      "primary": true
+    }
+  ],
+  "phone_numbers": [
+    {
+      "number": "+44 7700 900123",
+      "type": "mobile",
+      "primary": true
+    }
+  ],
+  "websites": [
+    {
+      "url": "www.alextaylordesign.co.uk",
+      "type": "portfolio"
+    }
+  ],
+  "social_media": {
+    "linkedin": "linkedin.com/in/alextaylordesign",
+    "twitter": "@alextaylorUK",
+    "instagram": "@alextaylordesigns",
+    "other": [
+      {
+        "platform": "Behance",
+        "handle": "behance.net/alextaylor"
+      },
+      {
+        "platform": "Pinterest",
+        "handle": "pinterest.com/alextayloruk"
+      }
+    ]
+  },
+  "instant_messaging": [
+    {
+      "platform": "Slack",
+      "handle": "@alextaylor"
+    },
+    {
+      "platform": "Discord",
+      "handle": "alextaylor#1234"
+    },
+    {
+      "platform": "Skype",
+      "handle": "live:alex.taylor.design"
+    }
+  ],
+  "preferred_contact_method": "email",
+  "timezone": "GMT",
+  "tags": ["freelance", "design", "content_creator"]
+}"""

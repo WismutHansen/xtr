@@ -1,0 +1,51 @@
+input_text = """
+STARTUP FOUNDERS NETWORKING MIXER
+
+Tuesday, March 5, 2025 | 6:00 PM - 9:00 PM PST
+Innovation Hub
+1234 Market Street, San Francisco, CA 94102
+
+Connect with fellow entrepreneurs in a casual setting.
+
+Admission: $25 (includes appetizers and drinks)
+Limited to 100 attendees
+
+RSVP by March 3rd: events@startupsf.org
+
+Bring business cards | Casual dress code | Street parking available
+
+Hosted by Startup Community SF
+"""
+
+expected_json = """{
+  "event_name": "Startup Founders Networking Mixer",
+  "event_type": "networking",
+  "date_time": {
+    "start_date": "2025-03-05",
+    "start_time": "6:00 PM",
+    "end_time": "9:00 PM",
+    "timezone": "PST",
+    "all_day": false
+  },
+  "location": {
+    "type": "physical",
+    "venue_name": "Innovation Hub",
+    "address": "1234 Market Street, San Francisco, CA 94102"
+  },
+  "organizer": {
+    "name": "Startup Community SF",
+    "email": "events@startupsf.org"
+  },
+  "description": "Connect with fellow entrepreneurs in a casual setting",
+  "registration": {
+    "fee": "$25",
+    "capacity": 100
+  },
+  "rsvp": {
+    "required": true,
+    "deadline": "2025-03-03",
+    "contact": "events@startupsf.org"
+  },
+  "tags": ["networking", "startups", "social"],
+  "special_instructions": "Bring business cards. Casual dress code. Street parking available. Includes appetizers and drinks."
+}"""

@@ -1,0 +1,34 @@
+input_text = """
+Action Items from Team Meeting - January 15, 2025
+
+Sarah mentioned we need an architecture review session for the new microservices. 
+Proposed: Thursday Feb 6th afternoon, 3-4 hours
+Tom will book the 8th floor conference room + send Zoom link
+Invite backend team, David (DevOps), Lisa (Security)
+"""
+
+expected_json = """{
+  "event_name": "Architecture Review Session",
+  "event_type": "meeting",
+  "date_time": {
+    "start_date": "2025-02-06"
+  },
+  "location": {
+    "type": "hybrid",
+    "room": "8th floor conference room"
+  },
+  "organizer": {
+    "name": "Tom"
+  },
+  "attendees": [
+    {
+      "name": "David",
+      "role": "DevOps"
+    },
+    {
+      "name": "Lisa",
+      "role": "Security"
+    }
+  ],
+  "description": "Deep dive on the new microservices architecture"
+}"""

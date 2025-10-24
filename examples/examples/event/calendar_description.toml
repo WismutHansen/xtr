@@ -1,0 +1,82 @@
+input_text = """
+Board of Directors Meeting - Q1 Review
+
+March 25, 2025 | 10:00 AM - 2:00 PM EST
+Executive Conference Room, 42nd Floor
+Microsoft Teams: https://teams.microsoft.com/l/meetup-join/19%3ameeting_NzExYjk
+
+Required: All board members, Richard Thompson (CEO), Patricia O'Neill (CFO), James Williams (COO)
+
+Agenda:
+10:00 - Opening remarks
+10:15 - Financial review (Patricia O'Neill)
+11:00 - Strategic initiatives (James Williams)
+12:00 - Working lunch
+12:45 - Risk assessment (Audit Committee)
+1:30 - Executive session
+
+Contact: Karen Stevens (k.stevens@company.com)
+"""
+
+expected_json = """{
+  "event_name": "Board of Directors Meeting - Q1 Review",
+  "event_type": "meeting",
+  "date_time": {
+    "start_date": "2025-03-25",
+    "start_time": "10:00 AM",
+    "end_time": "2:00 PM",
+    "timezone": "EST",
+    "all_day": false
+  },
+  "location": {
+    "type": "hybrid",
+    "room": "Executive Conference Room, 42nd Floor",
+    "virtual_link": "https://teams.microsoft.com/l/meetup-join/19%3ameeting_NzExYjk"
+  },
+  "attendees": [
+    {
+      "name": "Richard Thompson",
+      "role": "CEO",
+      "required": true
+    },
+    {
+      "name": "Patricia O'Neill",
+      "role": "CFO",
+      "required": true
+    },
+    {
+      "name": "James Williams",
+      "role": "COO",
+      "required": true
+    }
+  ],
+  "agenda": [
+    {
+      "time": "10:00 AM",
+      "topic": "Opening remarks"
+    },
+    {
+      "time": "10:15 AM",
+      "topic": "Financial review",
+      "speaker": "Patricia O'Neill"
+    },
+    {
+      "time": "11:00 AM",
+      "topic": "Strategic initiatives",
+      "speaker": "James Williams"
+    },
+    {
+      "time": "12:00 PM",
+      "topic": "Working lunch"
+    },
+    {
+      "time": "12:45 PM",
+      "topic": "Risk assessment",
+      "speaker": "Audit Committee"
+    },
+    {
+      "time": "1:30 PM",
+      "topic": "Executive session"
+    }
+  ]
+}"""

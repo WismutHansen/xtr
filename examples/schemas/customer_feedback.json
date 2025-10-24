@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Customer Feedback Schema",
+  "description": "Structured analysis of customer feedback, reviews, or support tickets",
+  "properties": {
+    "feedback_type": {
+      "type": "string",
+      "enum": ["bug_report", "feature_request", "complaint", "praise", "question", "other"],
+      "description": "Primary feedback category"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": ["very_positive", "positive", "neutral", "negative", "very_negative"],
+      "description": "Overall sentiment of the feedback"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "How urgently this needs attention"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Brief summary of the feedback"
+    },
+    "product_or_service": {
+      "type": "string",
+      "description": "Specific product or service mentioned"
+    },
+    "issues_identified": {
+      "type": "array",
+      "description": "Specific problems or pain points mentioned",
+      "items": {
+        "type": "object",
+        "properties": {
+          "issue": {
+            "type": "string",
+            "description": "Description of the issue"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "major", "minor"],
+            "description": "Issue severity"
+          },
+          "frequency": {
+            "type": "string",
+            "description": "How often the issue occurs"
+          }
+        },
+        "required": ["issue"]
+      }
+    },
+    "feature_requests": {
+      "type": "array",
+      "description": "Features or improvements requested",
+      "items": {
+        "type": "string"
+      }
+    },
+    "positive_aspects": {
+      "type": "array",
+      "description": "Things the customer liked or praised",
+      "items": {
+        "type": "string"
+      }
+    },
+    "customer_segment": {
+      "type": "object",
+      "properties": {
+        "user_type": {
+          "type": "string",
+          "description": "Type of user (e.g., enterprise, SMB, individual)"
+        },
+        "experience_level": {
+          "type": "string",
+          "enum": ["new_user", "intermediate", "advanced", "power_user"],
+          "description": "User experience level"
+        }
+      }
+    },
+    "suggested_actions": {
+      "type": "array",
+      "description": "Recommended actions to address the feedback",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Suggested action"
+          },
+          "department": {
+            "type": "string",
+            "description": "Team or department responsible"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["high", "medium", "low"],
+            "description": "Action priority"
+          }
+        },
+        "required": ["action"]
+      }
+    },
+    "tags": {
+      "type": "array",
+      "description": "Relevant tags for categorization",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["feedback_type", "sentiment", "summary"]
+}

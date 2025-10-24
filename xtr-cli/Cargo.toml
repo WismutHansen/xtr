@@ -1,0 +1,18 @@
+[package]
+name = "xtr-cli"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1"
+xtr-core = { path = "../xtr-core" }
+tokio = { version = "1.40", features = ["macros", "rt-multi-thread"] }
+clap = { version = "4", features = ["derive"] }
+serde_json = "1"
+
+[[bin]]
+name = "xtr"
+path = "src/main.rs"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Contract Extraction Schema",
+  "description": "Key information extracted from legal contracts and agreements",
+  "properties": {
+    "contract_metadata": {
+      "type": "object",
+      "properties": {
+        "contract_type": {
+          "type": "string",
+          "description": "Type of contract (e.g., NDA, SLA, employment, vendor agreement)"
+        },
+        "contract_number": {
+          "type": "string",
+          "description": "Contract or agreement number"
+        },
+        "execution_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date contract was signed"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date contract becomes effective"
+        },
+        "expiration_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date contract expires"
+        }
+      }
+    },
+    "parties": {
+      "type": "array",
+      "description": "Parties involved in the contract",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Party name"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role in contract (e.g., vendor, client, employee)"
+          },
+          "address": {
+            "type": "string",
+            "description": "Legal address"
+          },
+          "representative": {
+            "type": "string",
+            "description": "Authorized representative"
+          }
+        },
+        "required": ["name", "role"]
+      }
+    },
+    "financial_terms": {
+      "type": "object",
+      "properties": {
+        "total_value": {
+          "type": "string",
+          "description": "Total contract value"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency code"
+        },
+        "payment_terms": {
+          "type": "string",
+          "description": "Payment schedule and terms"
+        },
+        "payment_method": {
+          "type": "string",
+          "description": "Accepted payment methods"
+        }
+      }
+    },
+    "key_obligations": {
+      "type": "array",
+      "description": "Major obligations and responsibilities",
+      "items": {
+        "type": "object",
+        "properties": {
+          "party": {
+            "type": "string",
+            "description": "Party responsible"
+          },
+          "obligation": {
+            "type": "string",
+            "description": "Description of the obligation"
+          },
+          "deadline": {
+            "type": "string",
+            "description": "Deadline or timeframe if specified"
+          }
+        },
+        "required": ["obligation"]
+      }
+    },
+    "termination_clauses": {
+      "type": "object",
+      "properties": {
+        "termination_notice_period": {
+          "type": "string",
+          "description": "Required notice period for termination"
+        },
+        "termination_conditions": {
+          "type": "array",
+          "description": "Conditions under which contract can be terminated",
+          "items": {
+            "type": "string"
+          }
+        },
+        "penalties": {
+          "type": "string",
+          "description": "Penalties for early termination"
+        }
+      }
+    },
+    "renewal_terms": {
+      "type": "object",
+      "properties": {
+        "auto_renewal": {
+          "type": "boolean",
+          "description": "Whether contract auto-renews"
+        },
+        "renewal_notice_period": {
+          "type": "string",
+          "description": "Notice period required for renewal or non-renewal"
+        },
+        "renewal_terms": {
+          "type": "string",
+          "description": "Terms for renewal"
+        }
+      }
+    },
+    "liability_and_indemnification": {
+      "type": "object",
+      "properties": {
+        "liability_cap": {
+          "type": "string",
+          "description": "Maximum liability amount"
+        },
+        "indemnification_terms": {
+          "type": "string",
+          "description": "Indemnification provisions"
+        }
+      }
+    },
+    "confidentiality": {
+      "type": "object",
+      "properties": {
+        "confidentiality_period": {
+          "type": "string",
+          "description": "Duration of confidentiality obligations"
+        },
+        "scope": {
+          "type": "string",
+          "description": "What information is considered confidential"
+        }
+      }
+    },
+    "governing_law": {
+      "type": "string",
+      "description": "Jurisdiction and governing law"
+    },
+    "special_provisions": {
+      "type": "array",
+      "description": "Notable special terms or clauses",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["parties"]
+}

@@ -1,0 +1,60 @@
+input_text = """
+TechSummit 2025 - Call for Speakers
+
+Annual technology conference
+March 20-22, 2025 | 9:00 AM - 5:00 PM PST
+San Francisco Convention Center
+747 Howard St, San Francisco, CA 94103
+
+Theme: AI, Cloud Computing, and Cybersecurity
+
+Opening keynote: Dr. Jane Smith - "The Future of AI"
+Multiple breakout tracks | Lunch provided daily
+Evening reception on Day 1
+
+Expected attendance: 2,000+ professionals worldwide
+
+Registration: https://techsummit.com/register
+Early bird (until Feb 28): $499 | Regular: $599 | Students: $99
+
+Contact: info@techevents.com | +1-415-555-0123
+Organized by TechEvents Inc
+"""
+
+expected_json = """{
+  "event_name": "TechSummit 2025",
+  "event_type": "conference",
+  "date_time": {
+    "start_date": "2025-03-20",
+    "start_time": "9:00 AM",
+    "end_date": "2025-03-22",
+    "end_time": "5:00 PM",
+    "timezone": "PST",
+    "all_day": false
+  },
+  "location": {
+    "type": "physical",
+    "venue_name": "San Francisco Convention Center",
+    "address": "747 Howard St, San Francisco, CA 94103"
+  },
+  "organizer": {
+    "name": "TechEvents Inc",
+    "email": "info@techevents.com",
+    "phone": "+1-415-555-0123"
+  },
+  "attendees": [
+    {
+      "name": "Dr. Jane Smith",
+      "role": "keynote speaker"
+    }
+  ],
+  "description": "Annual technology conference focusing on AI, cloud computing, and cybersecurity innovations",
+  "registration": {
+    "required": true,
+    "deadline": "2025-02-28",
+    "link": "https://techsummit.com/register",
+    "fee": "Early bird: $499, Regular: $599, Students: $99",
+    "capacity": 2000
+  },
+  "tags": ["technology", "AI", "cloud", "cybersecurity"]
+}"""

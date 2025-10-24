@@ -1,0 +1,47 @@
+input_text = """
+Best regards,
+
+Michael O'Brien Jr.
+Senior Account Manager
+Global Solutions Corp | Sales Department
+📧 mobrien@globalsolutions.com
+📱 (555) 234-5678
+🏢 (555) 876-5432
+
+Office Hours: Mon-Fri, 9AM-6PM EST
+Preferred contact: Email
+"""
+
+expected_json = """{
+  "name": {
+    "full_name": "Michael O'Brien Jr.",
+    "first_name": "Michael",
+    "last_name": "O'Brien",
+    "suffix": "Jr."
+  },
+  "job_title": "Senior Account Manager",
+  "company": {
+    "name": "Global Solutions Corp",
+    "department": "Sales Department"
+  },
+  "email_addresses": [
+    {
+      "email": "mobrien@globalsolutions.com",
+      "type": "work",
+      "primary": true
+    }
+  ],
+  "phone_numbers": [
+    {
+      "number": "(555) 234-5678",
+      "type": "mobile",
+      "primary": true
+    },
+    {
+      "number": "(555) 876-5432",
+      "type": "work"
+    }
+  ],
+  "preferred_contact_method": "email",
+  "timezone": "EST"
+}"""
