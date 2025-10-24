@@ -18,10 +18,10 @@ XTR extracts structured data from unstructured text using language models and au
 
 ```bash
 # Extract contact details
-echo "Contact John at john@example.com" | xtr infer contact_details
+echo "Contact John at john@example.com" | xtr get contact_details
 
 # Extract event information
-cat event_announcement.txt | xtr infer event
+cat event_announcement.txt | xtr get event
 
 # Optimize extraction for a task
 xtr optimize contact_details
@@ -96,13 +96,13 @@ Large inputs (HTML pages, long documents) may exceed your model's context window
 
 ```bash
 # Extract only relevant sections
-curl -s https://example.com/contact | grep -A 100 "contact" | head -500 | xtr infer contact_details
+curl -s https://example.com/contact | grep -A 100 "contact" | head -500 | xtr get contact_details
 
 # Convert HTML to text first (requires pandoc)
-curl -s https://example.com/page.html | pandoc -f html -t plain | xtr infer contact_details
+curl -s https://example.com/page.html | pandoc -f html -t plain | xtr get contact_details
 
 # Use pup to extract specific HTML elements
-curl -s https://example.com | pup '.contact-info text{}' | xtr infer contact_details
+curl -s https://example.com | pup '.contact-info text{}' | xtr get contact_details
 ```
 
 3. **Use a model with larger context**: Switch to models supporting 32K+ tokens (e.g., Qwen2.5, Llama 3.1)
@@ -170,6 +170,7 @@ experiment_name = "xtr-optimization"
 ### Error: "Incorrect API key provided" with local models
 
 This error from local models (LM Studio, Ollama) usually indicates:
+
 - **Context length exceeded** - The input is too large for your model's context window (see Context Length Considerations above)
 - **Model server not running** - Verify with `curl http://localhost:1234/v1/models`
 - **Wrong base_url in config** - Check your config.toml has the correct endpoint
@@ -177,6 +178,7 @@ This error from local models (LM Studio, Ollama) usually indicates:
 ### Error: "model response returned empty 'output_json' string"
 
 The model returned a response but didn't follow the expected JSON format. Try:
+
 - Optimizing the task: `xtr optimize contact_details`
 - Using a different or larger model
 - Adding more examples to your task's examples directory
@@ -184,6 +186,7 @@ The model returned a response but didn't follow the expected JSON format. Try:
 ### Model names with provider prefixes (e.g., `qwen/`, `anthropic/`)
 
 When using **cloud APIs** (OpenAI, Anthropic, etc.), provider prefixes in model names work correctly:
+
 - `openai/gpt-4o` → routes to `https://api.openai.com/v1`
 - `anthropic/claude-3.5-sonnet` → routes to `https://api.anthropic.com/v1`
 - `qwen/qwen3-coder-30b` → routes to `https://dashscope-intl.aliyuncs.com`
