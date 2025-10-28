@@ -112,6 +112,47 @@ impl Evaluator for ExtractionProgram {
     }
 }
 
+/// Recursively flatten a JSON value into field paths with their values.
+///
+/// Examples:
+/// - `{"name": "John", "age": 30}` -> `{"name": "John", "age": 30}`
+/// - `{"user": {"name": "John"}}` -> `{"user.name": "John"}`
+/// - `{"items": [{"id": 1}, {"id": 2}]}` -> `{"items[0].id": 1, "items[1].id": 2}`
+fn get_all_fields(obj: &Value, prefix: &str) -> indexmap::IndexMap<String, Value> {
+    let mut fields = indexmap::IndexMap::new();
+
+    match obj {
+        Value::Object(map) => {
+            for (key, value) in map {
+                let full_key = if prefix.is_empty() {
+                    key.clone()
+                } else {
+                    format!("{prefix}.{key}")
+                };
+
+                if value.is_object() || value.is_array() {
+                    fields.extend(get_all_fields(value, &full_key));
+                } else {
+                    fields.insert(full_key, value.clone());
+                }
+            }
+        }
+        Value::Array(arr) => {
+            for (i, item) in arr.iter().enumerate() {
+                let indexed_key = format!("{prefix}[{i}]");
+                fields.extend(get_all_fields(item, &indexed_key));
+            }
+        }
+        _ => {
+            if !prefix.is_empty() {
+                fields.insert(prefix.to_string(), obj.clone());
+            }
+        }
+    }
+
+    fields
+}
+
 impl FeedbackEvaluator for ExtractionProgram {
     async fn feedback_metric(
         &self,
@@ -149,6 +190,7 @@ impl FeedbackEvaluator for ExtractionProgram {
             predicted
         };
 
+        // Parse schema
         let schema_json: Value = match serde_json::from_str(&schema_str) {
             Ok(value) => value,
             Err(err) => {
@@ -161,6 +203,7 @@ impl FeedbackEvaluator for ExtractionProgram {
             }
         };
 
+        // Parse expected
         let expected_json: Value = match serde_json::from_str(&expected_raw) {
             Ok(value) => value,
             Err(err) => {
@@ -173,6 +216,7 @@ impl FeedbackEvaluator for ExtractionProgram {
             }
         };
 
+        // Parse predicted
         let predicted_json: Value = match serde_json::from_str(&predicted) {
             Ok(value) => value,
             Err(err) => {
@@ -183,11 +227,19 @@ impl FeedbackEvaluator for ExtractionProgram {
             }
         };
 
+        let mut score: f32 = 0.0;
+        let mut feedback_lines = Vec::new();
+
+        // Step 1: Valid JSON (+0.2)
+        score += 0.2;
+        feedback_lines.push("✅ Valid JSON".to_string());
+
+        // Step 2: Schema validation (+0.2)
         let compiled = match JSONSchema::compile(&schema_json) {
             Ok(schema) => schema,
             Err(err) => {
                 return FeedbackMetric::new(
-                    0.0,
+                    score * 0.5,
                     format!(
                         "Failed to compile schema: {err}. Ensure the schema is valid JSON Schema."
                     ),
@@ -195,53 +247,90 @@ impl FeedbackEvaluator for ExtractionProgram {
             }
         };
 
-        let mut score: f32 = 0.0;
-        let mut feedback_lines = Vec::new();
-
         if let Err(errors) = compiled.validate(&predicted_json) {
-            feedback_lines.push("Schema validation failed:".to_string());
+            feedback_lines.push("❌ Schema validation failed:".to_string());
             for error in errors.take(5) {
-                feedback_lines.push(format!("- {}", error));
+                feedback_lines.push(format!("  - {error}"));
             }
-        } else {
-            score += 0.4_f32;
-            feedback_lines.push("✅ Output satisfies JSON schema.".to_string());
+            return FeedbackMetric::new(score * 0.5, feedback_lines.join("\n"));
         }
 
-        if predicted_json == expected_json {
-            score = 1.0_f32;
-            feedback_lines.push("✅ Output matches the expected JSON exactly.".to_string());
-        } else {
-            // Compare object keys for partial credit
-            let attempted_keys = predicted_json
-                .as_object()
-                .map(|map| map.keys().cloned().collect::<Vec<_>>())
-                .unwrap_or_default();
-            let expected_keys = expected_json
-                .as_object()
-                .map(|map| map.keys().cloned().collect::<Vec<_>>())
-                .unwrap_or_default();
+        score += 0.2;
+        feedback_lines.push("✅ Passes schema validation".to_string());
 
-            if !attempted_keys.is_empty() && !expected_keys.is_empty() {
-                let overlap = attempted_keys
-                    .iter()
-                    .filter(|key| expected_keys.contains(key))
-                    .count();
-                if overlap > 0 {
-                    score = score.max(0.6_f32);
-                    feedback_lines.push(format!(
-                        "⚠️ Output captured {overlap} / {} expected keys.",
-                        expected_keys.len()
-                    ));
+        // Step 3: Exact match check
+        if predicted_json == expected_json {
+            return FeedbackMetric::new(1.0, "✅ Exact match!".to_string());
+        }
+
+        // Step 4: Field-level precision/recall
+        let expected_fields = get_all_fields(&expected_json, "");
+        let predicted_fields = get_all_fields(&predicted_json, "");
+
+        if expected_fields.is_empty() {
+            return FeedbackMetric::new(score, feedback_lines.join("\n"));
+        }
+
+        let mut correct = 0;
+        let mut wrong = 0;
+
+        // Count correct and wrong fields
+        for (field_path, expected_value) in &expected_fields {
+            if let Some(predicted_value) = predicted_fields.get(field_path) {
+                if predicted_value == expected_value {
+                    correct += 1;
                 } else {
-                    feedback_lines.push("⚠️ Output did not capture expected keys.".to_string());
+                    wrong += 1;
                 }
             }
+            // Missing fields don't count as wrong
+        }
 
-            // Provide diff-style feedback
+        // Count extra/hallucinated fields
+        let extra = predicted_fields
+            .keys()
+            .filter(|k| !expected_fields.contains_key(*k))
+            .count();
+
+        if predicted_fields.is_empty() {
+            feedback_lines.push("❌ No fields extracted".to_string());
+            return FeedbackMetric::new(score, feedback_lines.join("\n"));
+        }
+
+        // Calculate precision: correct / (correct + wrong + extra)
+        let precision = if correct + wrong + extra > 0 {
+            correct as f32 / (correct + wrong + extra) as f32
+        } else {
+            0.0
+        };
+
+        // Calculate recall: correct / expected
+        let recall = correct as f32 / expected_fields.len() as f32;
+
+        // Weighted field score (precision 70%, recall 30%)
+        let field_score = (0.7 * precision) + (0.3 * recall);
+
+        // Final score: base (0.4) + weighted field score (0.6)
+        score += 0.6 * field_score;
+
+        // Feedback
+        feedback_lines.push(format!(
+            "📊 Fields: {correct} correct, {wrong} wrong, {} missing, {extra} extra",
+            expected_fields.len() - correct - wrong
+        ));
+        feedback_lines.push(format!(
+            "📈 Precision: {:.2} | Recall: {:.2} | Score: {:.3}",
+            precision, recall, score
+        ));
+
+        if wrong > 0 {
             feedback_lines.push(format!(
-                "Expected: {}\nGenerated: {}",
-                expected_raw, predicted
+                "⚠️  {wrong} incorrect field(s) - verify extraction logic"
+            ));
+        }
+        if extra > 0 {
+            feedback_lines.push(format!(
+                "⚠️  {extra} hallucinated field(s) - avoid adding unsupported fields"
             ));
         }
 
@@ -294,11 +383,8 @@ impl GepaRunner {
         )?;
 
         #[cfg(not(feature = "mlflow"))]
-        let logger = crate::mlflow_logger::GepaLogger::new(
-            task.name.clone(),
-            local_logging,
-            log_dir,
-        )?;
+        let logger =
+            crate::mlflow_logger::GepaLogger::new(task.name.clone(), local_logging, log_dir)?;
 
         let schema_path = task
             .schema_path
@@ -353,10 +439,10 @@ impl GepaRunner {
             num_iterations: usize::max(1, optimization.iterations as usize),
             minibatch_size: usize::max(1, optimization.batch_size as usize),
             num_trials: usize::max(1, optimization.rollouts_per_iteration as usize),
-            temperature: 0.9,
-            track_stats: true,
-            track_best_outputs: false,
-            max_rollouts: None,
+            temperature: optimization.temperature,
+            track_stats: optimization.track_stats,
+            track_best_outputs: optimization.track_best_outputs,
+            max_rollouts: optimization.max_rollouts.map(|v| v as usize),
             max_lm_calls: (optimization.max_lm_calls > 0)
                 .then_some(optimization.max_lm_calls as usize),
             prompt_model,
@@ -368,14 +454,75 @@ impl GepaRunner {
             "minibatch_size": optimization.batch_size,
             "rollouts_per_iteration": optimization.rollouts_per_iteration,
             "max_lm_calls": optimization.max_lm_calls,
+            "max_rollouts": optimization.max_rollouts,
+            "temperature": optimization.temperature,
+            "track_stats": optimization.track_stats,
+            "track_best_outputs": optimization.track_best_outputs,
             "student_model": models.student.descriptor.name,
             "teacher_model": models.teacher.descriptor.name,
         });
         logger.log_config(&config)?;
 
+        // Prepare evaluation minibatch (same as Python's eval_minibatch_size)
+        let eval_batch_size = optimization.batch_size.min(train_examples.len() as u32) as usize;
+        let eval_minibatch = &train_examples[..eval_batch_size];
+        
+        eprintln!("\n[DEBUG] Baseline evaluation on {} examples...", eval_batch_size);
+        
+        // Get baseline instruction for debugging
+        let baseline_instruction = OptimizableTrait::get_signature(&program.solver).instruction();
+        eprintln!("[DEBUG] Baseline instruction: {}", baseline_instruction);
+        
+        // Evaluate baseline performance
+        let mut baseline_total = 0.0;
+        for (i, example) in eval_minibatch.iter().enumerate() {
+            let prediction = program.forward(example.clone()).await?;
+            let score = program.feedback_metric(example, &prediction).await;
+            baseline_total += score.score;
+            eprintln!("[DEBUG] Baseline example {}: score={:.3}", i + 1, score.score);
+            if i < 2 {
+                eprintln!("[DEBUG]   Input: {}", example.get("input_text", None).as_str().unwrap_or(""));
+                eprintln!("[DEBUG]   Predicted: {}", prediction.get("output_json", None).as_str().unwrap_or(""));
+                eprintln!("[DEBUG]   Feedback: {}", score.feedback);
+            }
+        }
+        let baseline_score = baseline_total / eval_batch_size as f32;
+        eprintln!("[DEBUG] Baseline average score: {:.3}\n", baseline_score);
+
+        eprintln!("Running GEPA optimization...");
         let result = gepa
-            .compile_with_feedback(&mut program, train_examples)
+            .compile_with_feedback(&mut program, train_examples.clone())
             .await?;
+
+        // Get optimized instruction for debugging
+        let optimized_instruction = OptimizableTrait::get_signature(&program.solver).instruction();
+        eprintln!("\n[DEBUG] Optimized instruction: {}", optimized_instruction);
+        
+        eprintln!("[DEBUG] Final evaluation on {} examples...", eval_batch_size);
+        
+        // Evaluate optimized performance on the same minibatch
+        let mut optimized_total = 0.0;
+        for (i, example) in eval_minibatch.iter().enumerate() {
+            let prediction = program.forward(example.clone()).await?;
+            let score = program.feedback_metric(example, &prediction).await;
+            optimized_total += score.score;
+            eprintln!("[DEBUG] Optimized example {}: score={:.3}", i + 1, score.score);
+            if i < 2 {
+                eprintln!("[DEBUG]   Input: {}", example.get("input_text", None).as_str().unwrap_or(""));
+                eprintln!("[DEBUG]   Predicted: {}", prediction.get("output_json", None).as_str().unwrap_or(""));
+                eprintln!("[DEBUG]   Feedback: {}", score.feedback);
+            }
+        }
+        let optimized_score = optimized_total / eval_batch_size as f32;
+        let improvement = optimized_score - baseline_score;
+        
+        eprintln!("\n{}", "=".repeat(60));
+        eprintln!("GEPA RESULTS");
+        eprintln!("{}", "=".repeat(60));
+        eprintln!("Baseline score:  {:.3} ({:.1}%)", baseline_score, baseline_score * 100.0);
+        eprintln!("Optimized score: {:.3} ({:.1}%)", optimized_score, optimized_score * 100.0);
+        eprintln!("Improvement:     {:+.3} ({:+.1}%)", improvement, improvement * 100.0);
+        eprintln!("{}\n", "=".repeat(60));
 
         persist_gepa_result(state_dir, &task.name, &result)?;
 
@@ -384,7 +531,7 @@ impl GepaRunner {
 
         Ok(GepaOutcome {
             best_instruction: result.best_candidate.instruction.clone(),
-            best_score: result.best_candidate.average_score(),
+            best_score: optimized_score,
             total_iterations: result.evolution_history.len(),
             total_rollouts: result.total_rollouts,
             total_lm_calls: result.total_lm_calls,
@@ -423,4 +570,127 @@ pub fn load_best_instruction(paths: &AppPaths, task_name: &str) -> Option<String
         .join(task_name)
         .join("best.txt");
     fs::read_to_string(best_path).ok()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_get_all_fields_simple() {
+        let obj = json!({
+            "name": "John",
+            "age": 30,
+            "city": "NYC"
+        });
+
+        let fields = get_all_fields(&obj, "");
+
+        assert_eq!(fields.len(), 3);
+        assert_eq!(fields.get("name"), Some(&json!("John")));
+        assert_eq!(fields.get("age"), Some(&json!(30)));
+        assert_eq!(fields.get("city"), Some(&json!("NYC")));
+    }
+
+    #[test]
+    fn test_get_all_fields_nested() {
+        let obj = json!({
+            "user": {
+                "name": "John",
+                "contact": {
+                    "email": "john@example.com"
+                }
+            }
+        });
+
+        let fields = get_all_fields(&obj, "");
+
+        assert_eq!(fields.len(), 2);
+        assert_eq!(fields.get("user.name"), Some(&json!("John")));
+        assert_eq!(
+            fields.get("user.contact.email"),
+            Some(&json!("john@example.com"))
+        );
+    }
+
+    #[test]
+    fn test_get_all_fields_array() {
+        let obj = json!({
+            "items": [
+                {"id": 1, "name": "A"},
+                {"id": 2, "name": "B"}
+            ]
+        });
+
+        let fields = get_all_fields(&obj, "");
+
+        assert_eq!(fields.len(), 4);
+        assert_eq!(fields.get("items[0].id"), Some(&json!(1)));
+        assert_eq!(fields.get("items[0].name"), Some(&json!("A")));
+        assert_eq!(fields.get("items[1].id"), Some(&json!(2)));
+        assert_eq!(fields.get("items[1].name"), Some(&json!("B")));
+    }
+
+    #[test]
+    fn test_metric_scoring() {
+        // This is a conceptual test - actual integration would require full Example/Prediction setup
+        // Here we just verify the scoring logic
+
+        // Perfect match scenario
+        let expected = json!({"name": "John", "age": 30, "city": "NYC"});
+        let predicted = json!({"name": "John", "age": 30, "city": "NYC"});
+
+        let expected_fields = get_all_fields(&expected, "");
+        let predicted_fields = get_all_fields(&predicted, "");
+
+        let mut correct = 0;
+        for (k, v) in &expected_fields {
+            if predicted_fields.get(k) == Some(v) {
+                correct += 1;
+            }
+        }
+
+        assert_eq!(correct, 3);
+        let precision = correct as f32 / predicted_fields.len() as f32;
+        let recall = correct as f32 / expected_fields.len() as f32;
+        assert_eq!(precision, 1.0);
+        assert_eq!(recall, 1.0);
+
+        // One wrong field scenario
+        let predicted_wrong = json!({"name": "John", "age": 25, "city": "NYC"});
+        let predicted_fields_wrong = get_all_fields(&predicted_wrong, "");
+
+        let mut correct_wrong = 0;
+        let mut wrong = 0;
+        for (k, v) in &expected_fields {
+            if let Some(pv) = predicted_fields_wrong.get(k) {
+                if pv == v {
+                    correct_wrong += 1;
+                } else {
+                    wrong += 1;
+                }
+            }
+        }
+
+        assert_eq!(correct_wrong, 2);
+        assert_eq!(wrong, 1);
+        let precision_wrong = correct_wrong as f32 / (correct_wrong + wrong) as f32;
+        assert!((precision_wrong - 0.666).abs() < 0.01); // ~0.67
+
+        // One missing field scenario (better than wrong!)
+        let predicted_missing = json!({"name": "John", "city": "NYC"});
+        let predicted_fields_missing = get_all_fields(&predicted_missing, "");
+
+        let mut correct_missing = 0;
+        for (k, v) in &expected_fields {
+            if predicted_fields_missing.get(k) == Some(v) {
+                correct_missing += 1;
+            }
+        }
+
+        assert_eq!(correct_missing, 2);
+        let precision_missing = correct_missing as f32 / predicted_fields_missing.len() as f32;
+        assert_eq!(precision_missing, 1.0); // Perfect precision!
+    }
 }

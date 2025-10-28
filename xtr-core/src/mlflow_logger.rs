@@ -24,7 +24,7 @@ impl GepaLogger {
         log_dir: Option<PathBuf>,
     ) -> Result<Self> {
         let run_id = Self::generate_run_id();
-        
+
         let log_dir = if local_logging {
             Some(log_dir.unwrap_or_else(|| {
                 PathBuf::from(
@@ -34,8 +34,10 @@ impl GepaLogger {
                         .unwrap_or_else(|| {
                             let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
                             format!("{}/.local/state", home)
-                        })
-                ).join("xtr").join("optimization_logs")
+                        }),
+                )
+                .join("xtr")
+                .join("optimization_logs")
             }))
         } else {
             None
@@ -50,16 +52,14 @@ impl GepaLogger {
             let run = if let Some(uri) = mlflow_tracking_uri {
                 let exp_name = experiment_name.unwrap_or_else(|| "xtr-optimization".to_string());
                 match Experiment::new(&uri, &exp_name) {
-                    Ok(experiment) => {
-                        match experiment.create_run(Some(&task_name), vec![]) {
-                            Ok(run) => Some(run),
-                            Err(e) => {
-                                eprintln!("Warning: Failed to create MLflow run: {}", e);
-                                eprintln!("Continuing with local logging only...");
-                                None
-                            }
+                    Ok(experiment) => match experiment.create_run(Some(&task_name), vec![]) {
+                        Ok(run) => Some(run),
+                        Err(e) => {
+                            eprintln!("Warning: Failed to create MLflow run: {}", e);
+                            eprintln!("Continuing with local logging only...");
+                            None
                         }
-                    }
+                    },
                     Err(e) => {
                         eprintln!("Warning: Failed to connect to MLflow at {}: {}", uri, e);
                         eprintln!("Continuing with local logging only...");
@@ -105,7 +105,7 @@ impl GepaLogger {
         if let Some(ref log_dir) = self.log_dir {
             let run_dir = log_dir.join(&self.task_name).join(&self.run_id);
             fs::create_dir_all(&run_dir)?;
-            
+
             let file_path = run_dir.join(name);
             fs::write(&file_path, content)?;
         }
@@ -139,7 +139,11 @@ impl GepaLogger {
         #[cfg(feature = "mlflow")]
         if let Some(run) = &self.run {
             let _ = run.log_parameter("best_instruction", &result.best_candidate.instruction);
-            let _ = run.log_metric("final_best_score", result.best_candidate.average_score(), None);
+            let _ = run.log_metric(
+                "final_best_score",
+                result.best_candidate.average_score(),
+                None,
+            );
             let _ = run.log_metric("total_rollouts", result.total_rollouts as f32, None);
             let _ = run.log_metric("total_lm_calls", result.total_lm_calls as f32, None);
             let _ = run.log_metric("num_candidates", result.all_candidates.len() as f32, None);
@@ -153,7 +157,7 @@ impl GepaLogger {
                     &format!("candidate_{}_instruction", idx),
                     &candidate.instruction,
                 );
-                
+
                 let _ = run.log_metric(
                     &format!("candidate_{}_avg_score", idx),
                     candidate.average_score(),
@@ -167,7 +171,7 @@ impl GepaLogger {
                     );
                 }
             }
-            
+
             let result_json = serde_json::to_string_pretty(result)?;
             let _ = run.log_artifact_bytes(result_json.into_bytes(), "gepa_result.json");
         }
@@ -196,14 +200,14 @@ impl GepaLogger {
                 result.all_candidates.len(),
                 result.best_candidate.instruction,
             );
-            
+
             let mut evolution_table = String::new();
             for (generation, score) in &result.evolution_history {
                 evolution_table.push_str(&format!("  Generation {}: {:.4}\n", generation, score));
             }
-            
+
             self.log_to_file("summary.txt", &format!("{}{}", summary, evolution_table))?;
-            
+
             let mut candidates_md = String::from("# Candidates\n\n");
             for (idx, candidate) in result.all_candidates.iter().enumerate() {
                 candidates_md.push_str(&format!(
@@ -214,19 +218,32 @@ impl GepaLogger {
                     idx,
                     candidate.generation,
                     candidate.average_score(),
-                    candidate.parent_id.map(|id| id.to_string()).unwrap_or_else(|| "None".to_string()),
+                    candidate
+                        .parent_id
+                        .map(|id| id.to_string())
+                        .unwrap_or_else(|| "None".to_string()),
                     candidate.instruction,
                 ));
             }
             self.log_to_file("candidates.md", &candidates_md)?;
 
-            eprintln!("\n✓ Local logs saved to: {}", 
-                self.log_dir.as_ref().unwrap().join(&self.task_name).join(&self.run_id).display());
+            eprintln!(
+                "\n✓ Local logs saved to: {}",
+                self.log_dir
+                    .as_ref()
+                    .unwrap()
+                    .join(&self.task_name)
+                    .join(&self.run_id)
+                    .display()
+            );
         }
 
         #[cfg(not(feature = "mlflow"))]
         if !self.local_logging {
-            eprintln!("[Logging Disabled] GEPA result for task '{}':", self.task_name);
+            eprintln!(
+                "[Logging Disabled] GEPA result for task '{}':",
+                self.task_name
+            );
             eprintln!("  Best score: {:.4}", result.best_candidate.average_score());
             eprintln!("  Total rollouts: {}", result.total_rollouts);
             eprintln!("  Total LM calls: {}", result.total_lm_calls);

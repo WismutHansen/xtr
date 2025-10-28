@@ -500,6 +500,12 @@ impl OptimizationSection {
             .unwrap_or(DEFAULT_ROLLOUTS_PER_ITERATION);
         let max_lm_calls = merged.max_lm_calls.unwrap_or(DEFAULT_MAX_LM_CALLS);
         let batch_size = merged.batch_size.unwrap_or(DEFAULT_BATCH_SIZE);
+        let max_rollouts = merged.max_rollouts;
+        let temperature = merged.temperature.unwrap_or(DEFAULT_TEMPERATURE);
+        let track_stats = merged.track_stats.unwrap_or(DEFAULT_TRACK_STATS);
+        let track_best_outputs = merged
+            .track_best_outputs
+            .unwrap_or(DEFAULT_TRACK_BEST_OUTPUTS);
 
         let feedback_teacher = merge_optional_models(
             self.defaults.feedback_models.teacher.as_ref(),
@@ -523,6 +529,10 @@ impl OptimizationSection {
             rollouts_per_iteration: rollouts,
             max_lm_calls,
             batch_size,
+            max_rollouts,
+            temperature,
+            track_stats,
+            track_best_outputs,
             feedback_models: ResolvedFeedbackModels {
                 teacher: teacher_feedback,
                 student: student_feedback,
@@ -535,6 +545,16 @@ const DEFAULT_ITERATIONS: u32 = 4;
 const DEFAULT_ROLLOUTS_PER_ITERATION: u32 = 6;
 const DEFAULT_MAX_LM_CALLS: u32 = 32;
 const DEFAULT_BATCH_SIZE: u32 = 4;
+const DEFAULT_TEMPERATURE: f32 = 0.9;
+const DEFAULT_TRACK_STATS: bool = true;
+const DEFAULT_TRACK_BEST_OUTPUTS: bool = false;
+
+pub fn merge_optimization_settings_public(
+    base: &OptimizationSettings,
+    overrides: Option<&OptimizationSettings>,
+) -> OptimizationSettings {
+    merge_optimization_settings(base, overrides)
+}
 
 fn merge_optimization_settings(
     base: &OptimizationSettings,
@@ -553,6 +573,18 @@ fn merge_optimization_settings(
         }
         if override_settings.batch_size.is_some() {
             merged.batch_size = override_settings.batch_size;
+        }
+        if override_settings.max_rollouts.is_some() {
+            merged.max_rollouts = override_settings.max_rollouts;
+        }
+        if override_settings.temperature.is_some() {
+            merged.temperature = override_settings.temperature;
+        }
+        if override_settings.track_stats.is_some() {
+            merged.track_stats = override_settings.track_stats;
+        }
+        if override_settings.track_best_outputs.is_some() {
+            merged.track_best_outputs = override_settings.track_best_outputs;
         }
         if override_settings.feedback_models.teacher.is_some() {
             merged.feedback_models.teacher = override_settings.feedback_models.teacher.clone();
@@ -585,6 +617,10 @@ pub struct OptimizationSettings {
     pub rollouts_per_iteration: Option<u32>,
     pub max_lm_calls: Option<u32>,
     pub batch_size: Option<u32>,
+    pub max_rollouts: Option<u32>,
+    pub temperature: Option<f32>,
+    pub track_stats: Option<bool>,
+    pub track_best_outputs: Option<bool>,
     pub feedback_models: FeedbackModelOverrides,
 }
 
@@ -595,6 +631,10 @@ impl Default for OptimizationSettings {
             rollouts_per_iteration: Some(DEFAULT_ROLLOUTS_PER_ITERATION),
             max_lm_calls: Some(DEFAULT_MAX_LM_CALLS),
             batch_size: Some(DEFAULT_BATCH_SIZE),
+            max_rollouts: None,
+            temperature: Some(DEFAULT_TEMPERATURE),
+            track_stats: Some(DEFAULT_TRACK_STATS),
+            track_best_outputs: Some(DEFAULT_TRACK_BEST_OUTPUTS),
             feedback_models: FeedbackModelOverrides::default(),
         }
     }
@@ -638,16 +678,20 @@ pub struct ResolvedFeedbackModels {
     pub student: Option<ModelDescriptor>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ResolvedOptimizationSettings {
     pub iterations: u32,
     pub rollouts_per_iteration: u32,
     pub max_lm_calls: u32,
     pub batch_size: u32,
+    pub max_rollouts: Option<u32>,
+    pub temperature: f32,
+    pub track_stats: bool,
+    pub track_best_outputs: bool,
     pub feedback_models: ResolvedFeedbackModels,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ResolvedTaskConfig {
     pub name: String,
     pub description: Option<String>,

@@ -20,20 +20,20 @@ pub struct TaskExample {
 impl TaskExample {
     pub fn to_training_example(&self, schema: &str, include_timestamp: bool) -> dspy_rs::Example {
         let expected_str = serde_json::to_string(&self.expected_json).unwrap_or_default();
-        
+
         let mut context_parts = Vec::new();
         if let Some(ctx) = &self.additional_context {
             if !ctx.trim().is_empty() {
                 context_parts.push(ctx.clone());
             }
         }
-        
+
         if include_timestamp {
             let now = chrono::Local::now();
             let timestamp = now.format("%A, %B %d, %Y at %I:%M %p %Z").to_string();
             context_parts.push(format!("Current date and time: {timestamp}"));
         }
-        
+
         let final_context = context_parts.join("\n\n");
 
         dspy_rs::example! {

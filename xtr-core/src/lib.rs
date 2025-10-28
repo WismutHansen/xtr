@@ -4,8 +4,8 @@ pub mod config;
 pub mod engine;
 pub mod examples;
 pub mod lm;
-pub mod optimization;
 pub mod mlflow_logger;
+pub mod optimization;
 
 pub use config::AppConfig;
 pub use config::AppPaths;

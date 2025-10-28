@@ -48,10 +48,34 @@ local_logging = true
 # log_dir = "~/.local/state/xtr/optimization_logs"  # Optional, defaults to XDG_STATE_HOME/xtr/optimization_logs
 
 [optimization.defaults]
+# Number of evolutionary iterations (default: 4)
 iterations = 4
+
+# Number of trials per iteration for averaging stochastic LM behavior (default: 6)
 rollouts_per_iteration = 6
+
+# Maximum total language model API calls budget (default: 32)
 max_lm_calls = 32
+
+# Batch size for evaluation - larger = better signal but slower (default: 4)
 batch_size = 4
+
+# Maximum total rollouts budget - hard constraint on evaluations (optional, no default)
+# max_rollouts = 100
+
+# Temperature for LLM-based mutations (default: 0.9)
+# Higher values (>1.0) = more creative/exploratory mutations
+# Lower values (<1.0) = more conservative mutations
+# Range: 0.0-2.0
+temperature = 0.9
+
+# Track detailed optimization statistics (default: true)
+# Set to false to reduce memory overhead
+track_stats = true
+
+# Track best outputs for inference-time search (default: false)
+# Enable to store best outputs found during evolution
+track_best_outputs = false
 
 [optimization.defaults.feedback_models.teacher]
 name = "llama-feedback"
@@ -61,6 +85,9 @@ base_url = "http://localhost:8085/v1"
 iterations = 6
 rollouts_per_iteration = 8
 max_lm_calls = 48
+# You can override any optimization parameter here
+# temperature = 1.2
+# max_rollouts = 200
 
 [tasks."invoice_extraction"]
 schema = "~/data/xtr/schemas/invoice.json"

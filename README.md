@@ -129,22 +129,113 @@ include_timestamp = true
 Run GEPA optimization to improve extraction:
 
 ```bash
+# Basic optimization
 xtr optimize contact_details
+
+# Override parameters via CLI flags
+xtr optimize contact_details --iterations 20 --batch-size 50 --temperature 0.9
+
+# Quick testing (fast iterations)
+xtr optimize event --iterations 3 --batch-size 3 --max-rollouts 100
+
+# Production optimization (best results)
+xtr optimize contact_details \
+  --iterations 20 \
+  --batch-size 50 \
+  --rollouts-per-iteration 10 \
+  --temperature 0.9 \
+  --max-rollouts 1000
+
+# Budget-constrained optimization
+xtr optimize event --max-lm-calls 200 --max-rollouts 100
 ```
 
-Optimization settings:
+### Optimization Parameters
+
+Configure defaults in `config.toml` or override via CLI flags:
 
 ```toml
 [optimization.defaults]
+# Number of evolutionary iterations (default: 4)
 iterations = 4
+
+# Number of trials per iteration for averaging stochastic LM behavior (default: 6)
 rollouts_per_iteration = 6
+
+# Maximum total language model API calls budget (default: 32)
 max_lm_calls = 32
+
+# Batch size for evaluation - larger = better signal but slower (default: 4)
 batch_size = 4
 
+# Maximum total rollouts budget - hard constraint on evaluations (optional)
+# max_rollouts = 100
+
+# Temperature for LLM-based mutations (default: 0.9)
+# Higher values (>1.0) = more creative/exploratory mutations
+# Lower values (<1.0) = more conservative mutations
+# Range: 0.0-2.0
+temperature = 0.9
+
+# Track detailed optimization statistics (default: true)
+# Set to false to reduce memory overhead
+track_stats = true
+
+# Track best outputs for inference-time search (default: false)
+# Enable to store best outputs found during evolution
+track_best_outputs = false
+
 [optimization.tasks."contact_details"]
+# Override any parameter for specific tasks
 iterations = 6
 rollouts_per_iteration = 8
+temperature = 1.2
 ```
+
+### Available CLI Flags
+
+All optimization parameters can be overridden via command-line flags:
+
+- `--iterations <N>` - Number of optimization iterations
+- `--batch-size <N>` - Batch size for evaluation
+- `--rollouts-per-iteration <N>` - Number of trials per iteration
+- `--max-lm-calls <N>` - Maximum total LM calls budget
+- `--max-rollouts <N>` - Maximum total rollouts budget
+- `--temperature <F>` - Temperature for LLM mutations (0.0-2.0)
+- `--track-stats <BOOL>` - Track detailed statistics (true/false)
+- `--track-best-outputs <BOOL>` - Track best outputs (true/false)
+
+### Parameter Selection Guidelines
+
+**Development/Testing:**
+```bash
+xtr optimize task --iterations 3 --batch-size 3 --max-rollouts 50
+```
+Fast iterations for quick feedback during development.
+
+**Production/Best Results:**
+```bash
+xtr optimize task --iterations 20 --batch-size 50 --temperature 0.9 --max-rollouts 1000
+```
+Larger batches and more iterations for optimal extraction quality.
+
+**Budget-Constrained:**
+```bash
+xtr optimize task --max-lm-calls 200 --max-rollouts 100
+```
+Hard limits on API calls and evaluations to control costs.
+
+**Creative Exploration:**
+```bash
+xtr optimize task --temperature 1.3 --iterations 15
+```
+Higher temperature for exploring creative mutations when stuck in local optima.
+
+**Conservative Refinement:**
+```bash
+xtr optimize task --temperature 0.7 --iterations 10
+```
+Lower temperature for refining near-optimal solutions.
 
 ## Storage Locations
 

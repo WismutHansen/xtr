@@ -8,6 +8,7 @@ use dspy_rs::example;
 use crate::config::AppConfig;
 use crate::config::AppPaths;
 use crate::config::ConfigBundle;
+use crate::config::OptimizationSettings;
 use crate::config::ResolvedTaskConfig;
 use crate::config::load_or_initialize_config;
 use crate::lm::ModelHandle;
@@ -57,15 +58,44 @@ impl ExtractionEngine {
     }
 
     pub async fn optimize_task(&self, task_name: &str) -> Result<GepaOutcome> {
-        let task = self.resolve_task(task_name)?;
+        self.optimize_task_with_overrides(task_name, None).await
+    }
+
+    pub async fn optimize_task_with_overrides(
+        &self,
+        task_name: &str,
+        overrides: Option<OptimizationSettings>,
+    ) -> Result<GepaOutcome> {
+        let mut task = self.resolve_task(task_name)?;
+
+        if let Some(override_settings) = overrides {
+            let task_overrides = self.bundle.config.optimization.tasks.get(task_name);
+            task.optimization = self
+                .bundle
+                .config
+                .optimization
+                .resolve(Some(&override_settings), task_name)?;
+
+            if let Some(existing_overrides) = task_overrides {
+                let merged = crate::config::merge_optimization_settings_public(
+                    existing_overrides,
+                    Some(&override_settings),
+                );
+                task.optimization = self
+                    .bundle
+                    .config
+                    .optimization
+                    .resolve(Some(&merged), task_name)?;
+            }
+        }
+
         let models = TaskModelHandles::load(&task.models).await?;
         let optimization = task.optimization.clone();
 
-        let log_dir = self.bundle.config.mlflow.log_dir.as_ref()
-            .map(|s| {
-                let expanded = shellexpand::tilde(s);
-                std::path::PathBuf::from(expanded.as_ref())
-            });
+        let log_dir = self.bundle.config.mlflow.log_dir.as_ref().map(|s| {
+            let expanded = shellexpand::tilde(s);
+            std::path::PathBuf::from(expanded.as_ref())
+        });
 
         let runner = GepaRunner {
             task,
@@ -124,13 +154,13 @@ impl ExtractionEngine {
                 context_parts.push(ctx.to_string());
             }
         }
-        
+
         if task.include_timestamp {
             let now = chrono::Local::now();
             let timestamp = now.format("%A, %B %d, %Y at %I:%M %p %Z").to_string();
             context_parts.push(format!("Current date and time: {timestamp}"));
         }
-        
+
         let final_context = context_parts.join("\n\n");
 
         let example = example! {
