@@ -87,8 +87,21 @@ impl JsonAdapter {
         (user, Value::Object(response_object).to_string())
     }
 
+    fn strip_think_tags(text: &str) -> String {
+        let mut result = text.to_string();
+
+        // Remove <think>...</think> tags (case insensitive, handles newlines)
+        let re = regex::Regex::new(r"(?is)<think>.*?</think>").unwrap();
+        result = re.replace_all(&result, "").to_string();
+
+        result.trim().to_string()
+    }
+
     fn extract_json_payload(raw: &str) -> Option<Value> {
-        let trimmed = raw.trim();
+        // First strip any <think> tags
+        let cleaned = Self::strip_think_tags(raw);
+        let trimmed = cleaned.trim();
+
         if trimmed.is_empty() {
             return None;
         }
@@ -325,7 +338,14 @@ pub async fn build_model_handle(descriptor: &ModelDescriptor) -> Result<ModelHan
         .clone()
         .unwrap_or_else(|| "not_needed".to_string());
 
-    let config = LMConfig::builder().model(descriptor.name.clone()).build();
+    let config = if let Some(max_tokens) = descriptor.max_tokens {
+        LMConfig::builder()
+            .model(descriptor.name.clone())
+            .max_tokens(max_tokens)
+            .build()
+    } else {
+        LMConfig::builder().model(descriptor.name.clone()).build()
+    };
 
     let base_url = descriptor
         .base_url

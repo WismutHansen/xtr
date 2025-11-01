@@ -373,11 +373,13 @@ impl Default for ModelDefaults {
                 api_key: None,
                 adapter: Some("chat".to_string()),
                 request_timeout_secs: Some(60),
+                max_tokens: None,
             },
             student: ModelSpec {
                 name: Some("llama-student".to_string()),
                 base_url: Some("http://localhost:8081/v1".to_string()),
                 api_key: None,
+                max_tokens: None,
                 adapter: Some("chat".to_string()),
                 request_timeout_secs: Some(60),
             },
@@ -412,6 +414,7 @@ pub struct ModelSpec {
     pub api_key: Option<String>,
     pub adapter: Option<String>,
     pub request_timeout_secs: Option<u64>,
+    pub max_tokens: Option<u32>,
 }
 
 impl Default for ModelSpec {
@@ -422,6 +425,7 @@ impl Default for ModelSpec {
             api_key: None,
             adapter: None,
             request_timeout_secs: None,
+            max_tokens: None,
         }
     }
 }
@@ -442,6 +446,7 @@ impl ModelSpec {
             api_key: self.api_key,
             adapter: self.adapter,
             request_timeout_secs: self.request_timeout_secs,
+            max_tokens: self.max_tokens,
         })
     }
 }
@@ -663,6 +668,7 @@ pub struct ModelDescriptor {
     pub api_key: Option<String>,
     pub adapter: Option<String>,
     pub request_timeout_secs: Option<u64>,
+    pub max_tokens: Option<u32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

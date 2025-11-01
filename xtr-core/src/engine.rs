@@ -4,6 +4,8 @@ use anyhow::anyhow;
 use dspy_rs::Module;
 use dspy_rs::core::Optimizable as OptimizableTrait;
 use dspy_rs::example;
+use jsonschema::JSONSchema;
+use serde_json::Value;
 
 use crate::config::AppConfig;
 use crate::config::AppPaths;
@@ -17,6 +19,26 @@ use crate::optimization::ExtractionProgram;
 use crate::optimization::GepaOutcome;
 use crate::optimization::GepaRunner;
 use crate::optimization::load_best_instruction;
+
+/// Schema validation behavior during inference.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ValidationMode {
+    /// No validation performed
+    None,
+    /// Validate and show warning if validation fails, but return the output
+    Warn,
+    /// Validate and return error if validation fails
+    Error,
+}
+
+/// Retry behavior when validation fails.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RetryMode {
+    /// No chat history - each attempt is independent
+    Independent,
+    /// Include chat history and error message - LLM learns from previous attempts
+    WithHistory,
+}
 
 /// High-level orchestrator for optimization and inference workflows.
 #[derive(Debug)]
@@ -119,7 +141,63 @@ impl ExtractionEngine {
         additional_context: Option<&str>,
         verbose: bool,
     ) -> Result<String> {
-        let task = self.resolve_task(task_name)?;
+        self.run_inference_with_validation(
+            task_name,
+            input_text,
+            additional_context,
+            verbose,
+            ValidationMode::None,
+            0,
+            RetryMode::Independent,
+        )
+        .await
+    }
+
+    pub async fn run_inference_with_validation(
+        &self,
+        task_name: &str,
+        input_text: &str,
+        additional_context: Option<&str>,
+        verbose: bool,
+        validation_mode: ValidationMode,
+        max_retries: u32,
+        retry_mode: RetryMode,
+    ) -> Result<String> {
+        self.run_inference_with_options(
+            task_name,
+            input_text,
+            additional_context,
+            verbose,
+            validation_mode,
+            max_retries,
+            retry_mode,
+            None,
+        )
+        .await
+    }
+
+    pub async fn run_inference_with_options(
+        &self,
+        task_name: &str,
+        input_text: &str,
+        additional_context: Option<&str>,
+        verbose: bool,
+        validation_mode: ValidationMode,
+        max_retries: u32,
+        retry_mode: RetryMode,
+        max_tokens_override: Option<u32>,
+    ) -> Result<String> {
+        let mut task = self.resolve_task(task_name)?;
+
+        // Override max_tokens if specified
+        if let Some(max_tokens) = max_tokens_override {
+            task.models.student.max_tokens = Some(max_tokens);
+            task.models.teacher.max_tokens = Some(max_tokens);
+            for fallback in &mut task.models.fallbacks {
+                fallback.max_tokens = Some(max_tokens);
+            }
+        }
+
         let models = TaskModelHandles::load(&task.models).await?;
 
         let schema_path = task
@@ -133,6 +211,21 @@ impl ExtractionEngine {
                 schema_path.display()
             )
         })?;
+
+        // Parse and compile schema if validation is enabled
+        let compiled_schema = if validation_mode != ValidationMode::None {
+            let schema_value: Value = serde_json::from_str(&schema)
+                .with_context(|| format!("failed to parse schema for task '{task_name}'"))?;
+
+            // JSONSchema requires 'static lifetime, so we Box::leak the value
+            let leaked_schema: &'static Value = Box::leak(Box::new(schema_value));
+            let compiled = JSONSchema::compile(leaked_schema)
+                .with_context(|| format!("failed to compile schema for task '{task_name}'"))?;
+
+            Some(compiled)
+        } else {
+            None
+        };
 
         let mut program = ExtractionProgram::with_verbose(verbose);
 
@@ -163,12 +256,6 @@ impl ExtractionEngine {
 
         let final_context = context_parts.join("\n\n");
 
-        let example = example! {
-            "schema": "input" => &schema,
-            "input_text": "input" => input_text,
-            "additional_context": "input" => final_context.as_str()
-        };
-
         let mut attempts: Vec<(&ModelHandle, String)> =
             Vec::with_capacity(2 + models.fallbacks.len());
         attempts.push((
@@ -186,18 +273,41 @@ impl ExtractionEngine {
         let mut errors = Vec::new();
         for (handle, label) in attempts {
             handle.configure_global();
-            let prediction = match program.forward(example.clone()).await {
-                Ok(prediction) => prediction,
-                Err(err) => {
-                    errors.push(format!("{label} inference error: {err}"));
-                    continue;
+
+            // Try with retries if enabled
+            let result = match retry_mode {
+                RetryMode::Independent => {
+                    self.try_inference_independent(
+                        &mut program,
+                        &schema,
+                        input_text,
+                        &final_context,
+                        compiled_schema.as_ref(),
+                        validation_mode,
+                        max_retries,
+                        verbose,
+                    )
+                    .await
+                }
+                RetryMode::WithHistory => {
+                    self.try_inference_with_history(
+                        &mut program,
+                        &schema,
+                        input_text,
+                        &final_context,
+                        compiled_schema.as_ref(),
+                        validation_mode,
+                        max_retries,
+                        verbose,
+                    )
+                    .await
                 }
             };
 
-            match Self::extract_output_json(&prediction) {
+            match result {
                 Ok(output) => return Ok(output),
                 Err(err) => {
-                    errors.push(format!("{label} returned invalid output: {err}"));
+                    errors.push(format!("{label}: {err}"));
                     continue;
                 }
             }
@@ -210,8 +320,149 @@ impl ExtractionEngine {
         };
 
         Err(anyhow!(
-            "all configured models failed to produce a usable 'output_json': {summary}"
+            "all configured models failed to produce valid output: {summary}"
         ))
+    }
+
+    async fn try_inference_independent(
+        &self,
+        program: &mut ExtractionProgram,
+        schema: &str,
+        input_text: &str,
+        additional_context: &str,
+        compiled_schema: Option<&JSONSchema>,
+        validation_mode: ValidationMode,
+        max_retries: u32,
+        verbose: bool,
+    ) -> Result<String> {
+        let attempts = max_retries + 1;
+
+        for attempt in 0..attempts {
+            let example = example! {
+                "schema": "input" => schema,
+                "input_text": "input" => input_text,
+                "additional_context": "input" => additional_context
+            };
+
+            let prediction = program.forward(example).await.context("inference failed")?;
+
+            let output = Self::extract_output_json(&prediction)?;
+
+            // Validate if schema validation is enabled
+            if let Some(ref compiled) = compiled_schema {
+                match Self::validate_with_compiled(&output, compiled) {
+                    Ok(_) => return Ok(output),
+                    Err(validation_err) => match validation_mode {
+                        ValidationMode::None => return Ok(output),
+                        ValidationMode::Warn => {
+                            eprintln!("Warning: Schema validation failed: {validation_err}");
+                            return Ok(output);
+                        }
+                        ValidationMode::Error => {
+                            if attempt < max_retries {
+                                if verbose {
+                                    eprintln!(
+                                        "Attempt {}: validation failed, retrying... ({validation_err})",
+                                        attempt + 1
+                                    );
+                                }
+                                continue;
+                            } else {
+                                return Err(anyhow!(
+                                    "schema validation failed after {attempts} attempts: {validation_err}"
+                                ));
+                            }
+                        }
+                    },
+                }
+            } else {
+                return Ok(output);
+            }
+        }
+
+        Err(anyhow!(
+            "failed to produce valid output after {attempts} attempts"
+        ))
+    }
+
+    async fn try_inference_with_history(
+        &self,
+        program: &mut ExtractionProgram,
+        schema: &str,
+        input_text: &str,
+        additional_context: &str,
+        compiled_schema: Option<&JSONSchema>,
+        validation_mode: ValidationMode,
+        max_retries: u32,
+        verbose: bool,
+    ) -> Result<String> {
+        let attempts = max_retries + 1;
+        let mut context_with_feedback = additional_context.to_string();
+
+        for attempt in 0..attempts {
+            let example = example! {
+                "schema": "input" => schema,
+                "input_text": "input" => input_text,
+                "additional_context": "input" => context_with_feedback.as_str()
+            };
+
+            let prediction = program.forward(example).await.context("inference failed")?;
+
+            let output = Self::extract_output_json(&prediction)?;
+
+            // Validate if schema validation is enabled
+            if let Some(ref compiled) = compiled_schema {
+                match Self::validate_with_compiled(&output, compiled) {
+                    Ok(_) => return Ok(output),
+                    Err(validation_err) => {
+                        match validation_mode {
+                            ValidationMode::None => return Ok(output),
+                            ValidationMode::Warn => {
+                                eprintln!("Warning: Schema validation failed: {validation_err}");
+                                return Ok(output);
+                            }
+                            ValidationMode::Error => {
+                                if attempt < max_retries {
+                                    if verbose {
+                                        eprintln!(
+                                            "Attempt {}: validation failed, retrying with feedback... ({validation_err})",
+                                            attempt + 1
+                                        );
+                                    }
+                                    // Add error feedback to context for next attempt
+                                    context_with_feedback = format!(
+                                        "{}\n\nPrevious attempt failed validation with error: {}\nPlease correct the output to match the schema.",
+                                        additional_context, validation_err
+                                    );
+                                    continue;
+                                } else {
+                                    return Err(anyhow!(
+                                        "schema validation failed after {attempts} attempts: {validation_err}"
+                                    ));
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                return Ok(output);
+            }
+        }
+
+        Err(anyhow!(
+            "failed to produce valid output after {attempts} attempts"
+        ))
+    }
+
+    fn validate_with_compiled(output: &str, compiled_schema: &JSONSchema) -> Result<()> {
+        let json: Value = serde_json::from_str(output).context("output is not valid JSON")?;
+
+        if let Err(errors) = compiled_schema.validate(&json) {
+            let error_messages: Vec<String> = errors.map(|e| format!("{e}")).collect();
+            return Err(anyhow!("validation errors: {}", error_messages.join("; ")));
+        }
+
+        Ok(())
     }
 
     fn extract_output_json(prediction: &dspy_rs::Prediction) -> Result<String> {

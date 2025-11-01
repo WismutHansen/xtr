@@ -2,10 +2,30 @@ use anyhow::Context;
 use anyhow::Result;
 use clap::Parser;
 use clap::Subcommand;
+use clap::ValueEnum;
 use std::io::{self, Read};
 use xtr_core::ExtractionEngine;
 use xtr_core::config::FeedbackModelOverrides;
 use xtr_core::config::OptimizationSettings;
+
+mod commands;
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum CliValidationMode {
+    None,
+    Warn,
+    Error,
+}
+
+impl From<CliValidationMode> for xtr_core::ValidationMode {
+    fn from(mode: CliValidationMode) -> Self {
+        match mode {
+            CliValidationMode::None => xtr_core::ValidationMode::None,
+            CliValidationMode::Warn => xtr_core::ValidationMode::Warn,
+            CliValidationMode::Error => xtr_core::ValidationMode::Error,
+        }
+    }
+}
 
 #[cfg(unix)]
 fn increase_fd_limit() -> Result<()> {
@@ -103,6 +123,71 @@ enum Commands {
 
         #[arg(long, help = "Optional additional context")]
         context: Option<String>,
+
+        #[arg(
+            long,
+            value_enum,
+            default_value = "none",
+            help = "Schema validation mode"
+        )]
+        validate: CliValidationMode,
+
+        #[arg(
+            long,
+            short = 'r',
+            default_value = "0",
+            help = "Number of retry attempts on validation failure"
+        )]
+        retry: u32,
+
+        #[arg(
+            long,
+            short = 's',
+            help = "Use shots mode (with chat history) instead of independent retries"
+        )]
+        shots: bool,
+
+        #[arg(long, short = 'm', help = "Override max_tokens for this request")]
+        max_tokens: Option<u32>,
+    },
+
+    #[command(about = "Set the active optimization run for a task")]
+    Activate {
+        #[arg(help = "Task name")]
+        task: String,
+
+        #[arg(help = "Run path (e.g., 2025-10-28/contact_details_20251028_141425)")]
+        run: String,
+    },
+
+    #[command(about = "List optimization history for a task")]
+    History {
+        #[arg(help = "Task name (shows all tasks if omitted)")]
+        task: Option<String>,
+
+        #[arg(long, help = "Show detailed metrics for each run")]
+        detailed: bool,
+    },
+
+    #[command(about = "Compare two optimization runs")]
+    Compare {
+        #[arg(help = "Task name")]
+        task: String,
+
+        #[arg(help = "First run path")]
+        run1: String,
+
+        #[arg(help = "Second run path")]
+        run2: String,
+    },
+
+    #[command(about = "Clean old optimization runs")]
+    Clean {
+        #[arg(long, help = "Delete runs older than N days (default: 30)")]
+        older_than: Option<u32>,
+
+        #[arg(long, help = "Dry run - show what would be deleted")]
+        dry_run: bool,
     },
 }
 
@@ -169,6 +254,10 @@ async fn main() -> Result<()> {
             task,
             text,
             context,
+            validate,
+            retry,
+            shots,
+            max_tokens,
         } => {
             let input_text = match text {
                 Some(t) => t,
@@ -181,8 +270,24 @@ async fn main() -> Result<()> {
                 }
             };
 
+            let validation_mode = validate.into();
+            let retry_mode = if shots {
+                xtr_core::RetryMode::WithHistory
+            } else {
+                xtr_core::RetryMode::Independent
+            };
+
             let output = engine
-                .run_inference(&task, &input_text, context.as_deref(), cli.verbose)
+                .run_inference_with_options(
+                    &task,
+                    &input_text,
+                    context.as_deref(),
+                    cli.verbose,
+                    validation_mode,
+                    retry,
+                    retry_mode,
+                    max_tokens,
+                )
                 .await?;
 
             if cli.verbose {
@@ -193,6 +298,21 @@ async fn main() -> Result<()> {
                     Err(_) => println!("{output}"),
                 }
             }
+        }
+        Commands::Activate { task, run } => {
+            commands::handle_activate(&engine, &task, &run)?;
+        }
+        Commands::History { task, detailed } => {
+            commands::handle_history(&engine, task.as_deref(), detailed)?;
+        }
+        Commands::Compare { task, run1, run2 } => {
+            commands::handle_compare(&engine, &task, &run1, &run2)?;
+        }
+        Commands::Clean {
+            older_than,
+            dry_run,
+        } => {
+            commands::handle_clean(&engine, older_than.unwrap_or(30), dry_run)?;
         }
         Commands::Info => {
             println!(

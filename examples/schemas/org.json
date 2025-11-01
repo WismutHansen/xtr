@@ -1,0 +1,373 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/organization-details.schema.json",
+  "type": "object",
+  "title": "Organization Details Extraction Schema",
+  "description": "Structured organization information extracted from unstructured text",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable internal identifier if available (UUID/slug)"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where this data came from (URL, system name, file, etc.)"
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when this record was extracted"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time this record was updated"
+    },
+
+    "name": {
+      "type": "object",
+      "description": "Naming details for the organization",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Company name"
+        },
+        "legal_name": {
+          "type": "string",
+          "description": "Registered legal name if different"
+        },
+        "type": {
+          "type": "string",
+          "description": "Company type (e.g., GmbH, AG, Inc.)"
+        },
+        "brand_names": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Known brands or DBAs"
+        }
+      },
+      "required": ["name"]
+    },
+
+    "identifiers": {
+      "type": "object",
+      "description": "External identifiers",
+      "additionalProperties": false,
+      "properties": {
+        "vat_id": { "type": "string", "description": "VAT / USt-IdNr." },
+        "duns": { "type": "string", "description": "D-U-N-S number" },
+        "lei": { "type": "string", "description": "Legal Entity Identifier" },
+        "registration_number": {
+          "type": "string",
+          "description": "National company register ID"
+        }
+      }
+    },
+
+    "company_profile": {
+      "type": "object",
+      "description": "Optional profile fields",
+      "additionalProperties": false,
+      "properties": {
+        "industry": { "type": "string" },
+        "naics": { "type": "string" },
+        "sic": { "type": "string" },
+        "founded_year": { "type": "integer", "minimum": 1000, "maximum": 3000 },
+        "employee_count": { "type": "integer", "minimum": 1 },
+        "about": {
+          "type": "string",
+          "description": "Short description/summary"
+        }
+      }
+    },
+
+    "email_addresses": {
+      "type": "array",
+      "description": "Email addresses",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "info",
+              "sales",
+              "support",
+              "billing",
+              "press",
+              "careers",
+              "security",
+              "other"
+            ],
+            "description": "Email type"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary email"
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "Whether this address has been verified"
+          },
+          "do_not_contact": {
+            "type": "boolean",
+            "description": "Honor suppression lists / legal opt-outs"
+          }
+        },
+        "required": ["email"]
+      },
+      "uniqueItems": true
+    },
+
+    "phone_numbers": {
+      "type": "array",
+      "description": "Phone numbers",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "number": {
+            "type": "string",
+            "description": "Phone number in E.164 if possible",
+            "pattern": "^\\+?[1-9]\\d{1,14}$"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["mobile", "landline", "fax", "toll_free", "other"],
+            "description": "Phone type"
+          },
+          "extension": {
+            "type": "string",
+            "description": "Extension number if applicable"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code for number origin",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary number"
+          }
+        },
+        "required": ["number"]
+      },
+      "uniqueItems": true
+    },
+
+    "addresses": {
+      "type": "array",
+      "description": "Physical or mailing addresses",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "hq",
+              "regional_hq",
+              "branch",
+              "satellite",
+              "r_and_d_center",
+              "engineering_hub",
+              "operations_center",
+              "sales_office",
+              "training_center",
+              "innovation_hub",
+              "studio",
+              "campus",
+              "mailing",
+              "other"
+            ],
+            "description": "Address type"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Whether this is the primary address"
+          },
+          "street": {
+            "type": "string",
+            "description": "Street address (line 1)"
+          },
+          "street2": {
+            "type": "string",
+            "description": "Address line 2 (suite/floor/building)"
+          },
+          "city": {
+            "type": "string",
+            "description": "City"
+          },
+          "region": {
+            "type": "string",
+            "description": "State / province / Bundesland"
+          },
+          "postal_code": {
+            "type": "string",
+            "description": "ZIP or postal code"
+          },
+          "country": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code preferred",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "full_address": {
+            "type": "string",
+            "description": "Complete formatted address"
+          },
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Latitude in decimal degrees"
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Longitude in decimal degrees"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone (e.g., Europe/Berlin)"
+          }
+        }
+      }
+    },
+
+    "websites": {
+      "type": "array",
+      "description": "Websites and online profiles",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Website URL"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "company",
+              "personal",
+              "portfolio",
+              "blog",
+              "status",
+              "careers",
+              "docs",
+              "other"
+            ],
+            "description": "Website type"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Primary site"
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "Ownership or authenticity verified"
+          }
+        },
+        "required": ["url"]
+      },
+      "uniqueItems": true
+    },
+
+    "social_media": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "linkedin": {
+          "type": "string",
+          "description": "LinkedIn profile URL",
+          "format": "uri"
+        },
+        "twitter": {
+          "type": "string",
+          "description": "Twitter/X profile URL",
+          "format": "uri"
+        },
+        "github": {
+          "type": "string",
+          "description": "GitHub profile URL",
+          "format": "uri"
+        },
+        "facebook": {
+          "type": "string",
+          "description": "Facebook profile URL",
+          "format": "uri"
+        },
+        "instagram": {
+          "type": "string",
+          "description": "Instagram profile URL",
+          "format": "uri"
+        },
+        "other": {
+          "type": "array",
+          "description": "Other social media profiles",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "platform": {
+                "type": "string",
+                "description": "Platform name"
+              },
+              "handle": {
+                "type": "string",
+                "description": "Username or URL"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Canonical profile URL if available"
+              }
+            },
+            "required": ["platform", "handle"]
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+
+    "relationships": {
+      "type": "object",
+      "description": "Corporate structure",
+      "additionalProperties": false,
+      "properties": {
+        "parent_company": {
+          "type": "string",
+          "description": "Name or ID of parent company"
+        },
+        "subsidiaries": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Names or IDs of subsidiaries"
+        }
+      }
+    },
+
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or context about this contact"
+    },
+
+    "tags": {
+      "type": "array",
+      "description": "Tags for categorizing the contact",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  },
+  "required": ["name"]
+}

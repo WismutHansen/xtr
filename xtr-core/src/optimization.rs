@@ -466,23 +466,36 @@ impl GepaRunner {
         // Prepare evaluation minibatch (same as Python's eval_minibatch_size)
         let eval_batch_size = optimization.batch_size.min(train_examples.len() as u32) as usize;
         let eval_minibatch = &train_examples[..eval_batch_size];
-        
-        eprintln!("\n[DEBUG] Baseline evaluation on {} examples...", eval_batch_size);
-        
+
+        eprintln!(
+            "\n[DEBUG] Baseline evaluation on {} examples...",
+            eval_batch_size
+        );
+
         // Get baseline instruction for debugging
         let baseline_instruction = OptimizableTrait::get_signature(&program.solver).instruction();
         eprintln!("[DEBUG] Baseline instruction: {}", baseline_instruction);
-        
+
         // Evaluate baseline performance
         let mut baseline_total = 0.0;
         for (i, example) in eval_minibatch.iter().enumerate() {
             let prediction = program.forward(example.clone()).await?;
             let score = program.feedback_metric(example, &prediction).await;
             baseline_total += score.score;
-            eprintln!("[DEBUG] Baseline example {}: score={:.3}", i + 1, score.score);
+            eprintln!(
+                "[DEBUG] Baseline example {}: score={:.3}",
+                i + 1,
+                score.score
+            );
             if i < 2 {
-                eprintln!("[DEBUG]   Input: {}", example.get("input_text", None).as_str().unwrap_or(""));
-                eprintln!("[DEBUG]   Predicted: {}", prediction.get("output_json", None).as_str().unwrap_or(""));
+                eprintln!(
+                    "[DEBUG]   Input: {}",
+                    example.get("input_text", None).as_str().unwrap_or("")
+                );
+                eprintln!(
+                    "[DEBUG]   Predicted: {}",
+                    prediction.get("output_json", None).as_str().unwrap_or("")
+                );
                 eprintln!("[DEBUG]   Feedback: {}", score.feedback);
             }
         }
@@ -497,34 +510,66 @@ impl GepaRunner {
         // Get optimized instruction for debugging
         let optimized_instruction = OptimizableTrait::get_signature(&program.solver).instruction();
         eprintln!("\n[DEBUG] Optimized instruction: {}", optimized_instruction);
-        
-        eprintln!("[DEBUG] Final evaluation on {} examples...", eval_batch_size);
-        
+
+        eprintln!(
+            "[DEBUG] Final evaluation on {} examples...",
+            eval_batch_size
+        );
+
         // Evaluate optimized performance on the same minibatch
         let mut optimized_total = 0.0;
         for (i, example) in eval_minibatch.iter().enumerate() {
             let prediction = program.forward(example.clone()).await?;
             let score = program.feedback_metric(example, &prediction).await;
             optimized_total += score.score;
-            eprintln!("[DEBUG] Optimized example {}: score={:.3}", i + 1, score.score);
+            eprintln!(
+                "[DEBUG] Optimized example {}: score={:.3}",
+                i + 1,
+                score.score
+            );
             if i < 2 {
-                eprintln!("[DEBUG]   Input: {}", example.get("input_text", None).as_str().unwrap_or(""));
-                eprintln!("[DEBUG]   Predicted: {}", prediction.get("output_json", None).as_str().unwrap_or(""));
+                eprintln!(
+                    "[DEBUG]   Input: {}",
+                    example.get("input_text", None).as_str().unwrap_or("")
+                );
+                eprintln!(
+                    "[DEBUG]   Predicted: {}",
+                    prediction.get("output_json", None).as_str().unwrap_or("")
+                );
                 eprintln!("[DEBUG]   Feedback: {}", score.feedback);
             }
         }
         let optimized_score = optimized_total / eval_batch_size as f32;
         let improvement = optimized_score - baseline_score;
-        
+
         eprintln!("\n{}", "=".repeat(60));
         eprintln!("GEPA RESULTS");
         eprintln!("{}", "=".repeat(60));
-        eprintln!("Baseline score:  {:.3} ({:.1}%)", baseline_score, baseline_score * 100.0);
-        eprintln!("Optimized score: {:.3} ({:.1}%)", optimized_score, optimized_score * 100.0);
-        eprintln!("Improvement:     {:+.3} ({:+.1}%)", improvement, improvement * 100.0);
+        eprintln!(
+            "Baseline score:  {:.3} ({:.1}%)",
+            baseline_score,
+            baseline_score * 100.0
+        );
+        eprintln!(
+            "Optimized score: {:.3} ({:.1}%)",
+            optimized_score,
+            optimized_score * 100.0
+        );
+        eprintln!(
+            "Improvement:     {:+.3} ({:+.1}%)",
+            improvement,
+            improvement * 100.0
+        );
         eprintln!("{}\n", "=".repeat(60));
 
-        persist_gepa_result(state_dir, &task.name, &result)?;
+        persist_gepa_result(
+            state_dir,
+            &task.name,
+            &result,
+            baseline_score,
+            optimized_score,
+            train_examples.len(),
+        )?;
 
         logger.log_final_result(&result)?;
         logger.finish()?;
@@ -539,37 +584,155 @@ impl GepaRunner {
     }
 }
 
-fn persist_gepa_result(state_dir: &Path, task_name: &str, result: &GEPAResult) -> Result<()> {
-    let task_dir = state_dir.join("prompts").join(task_name);
-    fs::create_dir_all(&task_dir)?;
+fn persist_gepa_result(
+    state_dir: &Path,
+    task_name: &str,
+    result: &GEPAResult,
+    baseline_score: f32,
+    optimized_score: f32,
+    num_examples: usize,
+) -> Result<()> {
+    use chrono::Local;
 
+    // Create dated subdirectory structure: optimizations/YYYY-MM-DD/task_YYYYMMDD_HHMMSS/
+    let now = Local::now();
+    let date_str = now.format("%Y-%m-%d").to_string();
+    let timestamp_str = now.format("%Y%m%d_%H%M%S").to_string();
+    let run_name = format!("{}_{}", task_name, timestamp_str);
+
+    let optimizations_dir = state_dir
+        .join("optimizations")
+        .join(&date_str)
+        .join(&run_name);
+    fs::create_dir_all(&optimizations_dir)?;
+
+    // Save config.json - optimization parameters
+    let config = serde_json::json!({
+        "task": task_name,
+        "timestamp": now.to_rfc3339(),
+        "date": date_str,
+        "run_name": run_name,
+        "num_examples": num_examples,
+    });
     fs::write(
-        task_dir.join("best.meta"),
-        format!(
-            "best_score={:.4}\ntotal_rollouts={}\ntotal_lm_calls={}",
-            result.best_candidate.average_score(),
-            result.total_rollouts,
-            result.total_lm_calls
-        ),
+        optimizations_dir.join("config.json"),
+        serde_json::to_string_pretty(&config)?,
     )?;
+
+    // Save metrics.json - scores and improvement
+    let improvement = optimized_score - baseline_score;
+    let metrics = serde_json::json!({
+        "baseline_score": baseline_score,
+        "optimized_score": optimized_score,
+        "improvement": improvement,
+        "improvement_percentage": improvement * 100.0,
+        "total_rollouts": result.total_rollouts,
+        "total_lm_calls": result.total_lm_calls,
+        "num_examples": num_examples,
+        "timestamp": now.to_rfc3339(),
+    });
     fs::write(
-        task_dir.join("best.txt"),
+        optimizations_dir.join("metrics.json"),
+        serde_json::to_string_pretty(&metrics)?,
+    )?;
+
+    // Save optimized_instruction.txt - the optimized prompt
+    fs::write(
+        optimizations_dir.join("optimized_instruction.txt"),
         &result.best_candidate.instruction,
     )?;
 
+    // Save result.json - full GEPA result with evolution history
     let serialized = serde_json::to_vec_pretty(result)?;
-    fs::write(task_dir.join("result.json"), serialized)?;
+    fs::write(optimizations_dir.join("result.json"), serialized)?;
+
+    // Save summary.txt - human-readable summary
+    let summary = format!(
+        "GEPA Optimization Summary\n\
+         {}\n\n\
+         Task: {}\n\
+         Date: {}\n\
+         Examples: {}\n\n\
+         Results:\n\
+         Baseline score:  {:.3} ({:.1}%)\n\
+         Optimized score: {:.3} ({:.1}%)\n\
+         Improvement:     {:+.3} ({:+.1}%)\n\n\
+         Statistics:\n\
+         Total rollouts: {}\n\
+         Total LM calls: {}\n\n\
+         {}\n\
+         Optimized Instruction\n\
+         {}\n\
+         {}\n",
+        "=".repeat(60),
+        task_name,
+        now.format("%Y-%m-%d %H:%M:%S"),
+        num_examples,
+        baseline_score,
+        baseline_score * 100.0,
+        optimized_score,
+        optimized_score * 100.0,
+        improvement,
+        improvement * 100.0,
+        result.total_rollouts,
+        result.total_lm_calls,
+        "=".repeat(60),
+        "-".repeat(60),
+        result.best_candidate.instruction,
+    );
+    fs::write(optimizations_dir.join("summary.txt"), summary)?;
+
+    // Update the active prompt in prompts/task_name/
+    let prompts_dir = state_dir.join("prompts").join(task_name);
+    fs::create_dir_all(&prompts_dir)?;
+
+    // Copy optimized instruction to active location
+    fs::write(
+        prompts_dir.join("optimized_instruction.txt"),
+        &result.best_candidate.instruction,
+    )?;
+
+    // Save metadata.json to track which run is active
+    let metadata = serde_json::json!({
+        "active_run": format!("{}/{}", date_str, run_name),
+        "timestamp": now.to_rfc3339(),
+        "baseline_score": baseline_score,
+        "optimized_score": optimized_score,
+        "improvement": improvement,
+    });
+    fs::write(
+        prompts_dir.join("metadata.json"),
+        serde_json::to_string_pretty(&metadata)?,
+    )?;
+
+    eprintln!("\n✓ Saved optimization results to:");
+    eprintln!("  {}", optimizations_dir.display());
+    eprintln!("\n✓ Updated active prompt at:");
+    eprintln!("  {}", prompts_dir.display());
 
     Ok(())
 }
 
 pub fn load_best_instruction(paths: &AppPaths, task_name: &str) -> Option<String> {
-    let best_path = paths
+    // Try new structure first: prompts/task_name/optimized_instruction.txt
+    let new_path = paths
+        .state_dir
+        .join("prompts")
+        .join(task_name)
+        .join("optimized_instruction.txt");
+
+    if let Ok(content) = fs::read_to_string(&new_path) {
+        return Some(content);
+    }
+
+    // Fallback to old structure: prompts/task_name/best.txt
+    let old_path = paths
         .state_dir
         .join("prompts")
         .join(task_name)
         .join("best.txt");
-    fs::read_to_string(best_path).ok()
+
+    fs::read_to_string(old_path).ok()
 }
 
 #[cfg(test)]

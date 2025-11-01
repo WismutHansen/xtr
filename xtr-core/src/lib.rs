@@ -18,6 +18,8 @@ pub use config::StorageSettings;
 pub use config::TaskConfig;
 pub use config::load_or_initialize_config;
 pub use engine::ExtractionEngine;
+pub use engine::RetryMode;
+pub use engine::ValidationMode;
 pub use examples::TaskExample;
 pub use examples::load_task_examples;
 pub use lm::AdapterKind;

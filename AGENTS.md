@@ -2,6 +2,8 @@
 
 This file provides guidance to AI Agents when working with code in this repository.
 
+BEFORE ANYTHING ELSE: run 'bd onboard' and follow the instructions
+
 ## Development Philosophy
 
 **NEVER PUBLISH TO PACKAGE REPOSITORIES WITHOUT EXPLICIT PERMISSION**: Under no circumstances should you publish any packages to cargo/homebrew/npm or any other public registry without explicit permission from the user. This is a critical security and trust boundary that must never be crossed.
@@ -88,7 +90,7 @@ Run just fmt automatically after making Rust code changes; do not ask for approv
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+NEVER proactively create documentation files (\*.md) or README files. Only create documentation files if explicitly requested by the User.
 
 Awesome CLIs (adhere to these rules when applicable):
 

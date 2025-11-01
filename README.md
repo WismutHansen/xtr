@@ -9,6 +9,8 @@ XTR extracts structured data from unstructured text using language models and au
 ## Features
 
 - **Schema-driven extraction**: Define JSON schemas for your data structures
+- **Schema validation**: Validate outputs during inference with configurable modes (none, warn, error)
+- **Smart retries**: Automatic retry with independent attempts or LLM learning from errors
 - **Multi-model fallback**: Teacher/student model architecture with fallback support
 - **Auto-optimization**: GEPA algorithm improves extraction quality over time
 - **Local & cloud models**: Works with OpenAI, Anthropic, local LLMs (LM Studio, Ollama, etc.)
@@ -22,6 +24,18 @@ echo "Contact John at john@example.com" | xtr get contact_details
 
 # Extract event information
 cat event_announcement.txt | xtr get event
+
+# Extract with schema validation (error on invalid output)
+echo "Contact John" | xtr get contact_details --validate error
+
+# Extract with retries (up to 3 attempts if validation fails)
+cat input.txt | xtr get event --validate error --retry 3
+
+# Extract with shots mode (LLM learns from errors via chat history)
+cat input.txt | xtr get event --validate error --retry 3 --shots
+
+# Override max_tokens for this request
+cat large_input.txt | xtr get event --max-tokens 4096
 
 # Optimize extraction for a task
 xtr optimize contact_details
@@ -39,12 +53,14 @@ name = "gpt-4o-mini"
 base_url = "https://api.openai.com/v1"
 api_key = "sk-..."
 adapter = "chat"
+max_tokens = 4096  # Optional: set max completion tokens
 
 [models.defaults.student]
 name = "qwen3-coder-30b"
 base_url = "http://localhost:1234/v1"
 api_key = "not_needed"
 adapter = "chat"
+max_tokens = 2048  # Optional: can be overridden per-request with --max-tokens
 ```
 
 ### Using Local Models (LM Studio, Ollama)
@@ -150,6 +166,34 @@ xtr optimize contact_details \
 xtr optimize event --max-lm-calls 200 --max-rollouts 100
 ```
 
+### Managing Optimization Runs
+
+After running optimizations, use these commands to manage your results:
+
+```bash
+# View optimization history for a task
+xtr history contact_details
+
+# View history for all tasks with detailed metrics
+xtr history --detailed
+
+# Activate a specific optimization run
+xtr activate contact_details 2025-10-28/contact_details_20251028_141425
+
+# Compare two optimization runs
+xtr compare contact_details \
+  2025-10-28/contact_details_20251028_141425 \
+  2025-10-29/contact_details_20251029_091234
+
+# Clean old optimization runs (dry run)
+xtr clean --older-than 30 --dry-run
+
+# Actually delete old runs
+xtr clean --older-than 30
+```
+
+The latest optimization automatically becomes the active prompt. Use `xtr activate` to switch between different optimization runs.
+
 ### Optimization Parameters
 
 Configure defaults in `config.toml` or override via CLI flags:
@@ -237,12 +281,89 @@ xtr optimize task --temperature 0.7 --iterations 10
 ```
 Lower temperature for refining near-optimal solutions.
 
+## Schema Validation & Retries
+
+XTR supports runtime schema validation during inference with configurable retry behavior.
+
+### Automatic Think Tag Stripping
+
+XTR automatically strips `<think>...</think>` tags from model outputs during inference. This is useful for models that use chain-of-thought reasoning in their responses. The reasoning content is removed before JSON parsing, ensuring clean extraction results.
+
+### Validation Modes
+
+**None (default)**: No validation, return output as-is
+```bash
+xtr get contact_details < input.txt
+```
+
+**Warn**: Validate and show warning if validation fails, but still return the output
+```bash
+xtr get contact_details --validate warn < input.txt
+```
+
+**Error**: Validate and return error if validation fails
+```bash
+xtr get contact_details --validate error < input.txt
+```
+
+### Retry Strategies
+
+**Independent Retries (`--retry`)**: Each retry is independent, no chat history
+```bash
+# Retry up to 3 times without context
+xtr get event --validate error --retry 3 < input.txt
+```
+
+Each attempt starts fresh without knowledge of previous failures. Useful when the model has stochastic behavior and might succeed on a different sample.
+
+**Shots Mode (`--shots`)**: LLM learns from previous errors via chat history
+```bash
+# Retry up to 3 times with error feedback in context
+xtr get event --validate error --retry 3 --shots < input.txt
+```
+
+Each retry includes the previous validation error in the context, allowing the LLM to learn from its mistakes and correct the output. Better for systematic errors where the model needs guidance.
+
+### Examples
+
+```bash
+# Quick validation without retries
+echo "Contact: john@example.com" | xtr get contact_details --validate error
+
+# Robust extraction with independent retries
+cat complex_input.txt | xtr get event --validate error --retry 5
+
+# Learning from errors with shots mode
+cat tricky_format.txt | xtr get contact_details --validate error --retry 3 --shots
+
+# Warning mode for debugging (non-blocking)
+xtr get event --validate warn --verbose < input.txt
+```
+
 ## Storage Locations
 
-- **Config**: `~/.config/xtr/` or `$XDG_CONFIG_HOME/xtr/`
-- **Data**: `~/.local/share/xtr/` or `$XDG_DATA_HOME/xtr/`
-- **State**: `~/.local/state/xtr/` or `$XDG_STATE_HOME/xtr/`
-- **Logs**: `~/.local/state/xtr/optimization_logs/`
+XTR follows the XDG Base Directory Specification:
+
+### Configuration (`~/.config/xtr/` or `$XDG_CONFIG_HOME/xtr/`)
+- `config.toml` - Main configuration file (models, tasks, optimization defaults)
+
+### Data (`~/.local/share/xtr/` or `$XDG_DATA_HOME/xtr/`)
+- `schemas/` - JSON schemas for tasks
+- `examples/` - Training examples (TOML files)
+
+### State (`~/.local/state/xtr/` or `$XDG_STATE_HOME/xtr/`)
+- `prompts/` - Active prompts for inference
+  - `{task}/optimized_instruction.txt` - Current active prompt
+  - `{task}/metadata.json` - Tracks which optimization run is active
+- `optimizations/` - Historical optimization runs
+  - `YYYY-MM-DD/{task}_YYYYMMDD_HHMMSS/` - Individual run directories containing:
+    - `config.json` - Optimization parameters
+    - `metrics.json` - Scores and improvements
+    - `optimized_instruction.txt` - The optimized prompt
+    - `result.json` - Full GEPA result with evolution history
+    - `summary.txt` - Human-readable summary
+- `optimization_logs/` - Detailed logs (optional, for debugging)
+- `cache/` - LM response cache
 
 ## MLflow Tracking
 
