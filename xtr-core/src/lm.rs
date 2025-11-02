@@ -10,7 +10,6 @@ use dspy_rs::Chat;
 use dspy_rs::ChatAdapter;
 use dspy_rs::Example;
 use dspy_rs::LM;
-use dspy_rs::LMConfig;
 use dspy_rs::Message;
 use dspy_rs::MetaSignature;
 use dspy_rs::Prediction;
@@ -243,7 +242,7 @@ impl Adapter for JsonAdapter {
         signature: &dyn MetaSignature,
         inputs: Example,
     ) -> Result<Prediction> {
-        if lm.config.cache
+        if lm.cache
             && let Some(cache) = lm.cache_handler.as_ref()
         {
             let cache_key = inputs.clone();
@@ -262,7 +261,7 @@ impl Adapter for JsonAdapter {
             lm_usage: response.usage,
         };
 
-        if lm.config.cache
+        if lm.cache
             && let Some(cache) = lm.cache_handler.as_ref()
         {
             let (tx, rx) = tokio::sync::mpsc::channel(1);
@@ -312,8 +311,8 @@ impl AdapterKind {
 
     pub fn install(self, lm: LM) {
         match self {
-            Self::Chat => dspy_rs::configure(lm, ChatAdapter::default()),
-            Self::Json => dspy_rs::configure(lm, JsonAdapter::default()),
+            Self::Chat => dspy_rs::configure(lm, ChatAdapter),
+            Self::Json => dspy_rs::configure(lm, JsonAdapter),
         }
     }
 }
@@ -338,26 +337,27 @@ pub async fn build_model_handle(descriptor: &ModelDescriptor) -> Result<ModelHan
         .clone()
         .unwrap_or_else(|| "not_needed".to_string());
 
-    let config = if let Some(max_tokens) = descriptor.max_tokens {
-        LMConfig::builder()
-            .model(descriptor.name.clone())
-            .max_tokens(max_tokens)
-            .build()
-    } else {
-        LMConfig::builder().model(descriptor.name.clone()).build()
-    };
-
     let base_url = descriptor
         .base_url
         .clone()
         .unwrap_or_else(|| "https://api.openai.com/v1".to_string());
 
-    let lm = LM::builder()
-        .api_key(api_key.into())
-        .base_url(base_url)
-        .config(config)
-        .build()
-        .await;
+    let lm = if let Some(max_tokens) = descriptor.max_tokens {
+        LM::builder()
+            .api_key(api_key)
+            .base_url(base_url)
+            .model(descriptor.name.clone())
+            .max_tokens(max_tokens)
+            .build()
+            .await?
+    } else {
+        LM::builder()
+            .api_key(api_key)
+            .base_url(base_url)
+            .model(descriptor.name.clone())
+            .build()
+            .await?
+    };
 
     Ok(ModelHandle {
         descriptor: descriptor.clone(),

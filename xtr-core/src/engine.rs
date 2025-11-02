@@ -203,7 +203,7 @@ impl ExtractionEngine {
         let schema_path = task
             .schema_path
             .as_ref()
-            .ok_or_else(|| anyhow!("task '{}' is missing schema path", task_name))?;
+            .ok_or_else(|| anyhow!("task '{task_name}' is missing schema path"))?;
         let schema = std::fs::read_to_string(schema_path).with_context(|| {
             format!(
                 "failed to read schema for task '{}' at {}",
@@ -349,7 +349,7 @@ impl ExtractionEngine {
             let output = Self::extract_output_json(&prediction)?;
 
             // Validate if schema validation is enabled
-            if let Some(ref compiled) = compiled_schema {
+            if let Some(compiled) = compiled_schema {
                 match Self::validate_with_compiled(&output, compiled) {
                     Ok(_) => return Ok(output),
                     Err(validation_err) => match validation_mode {
@@ -411,7 +411,7 @@ impl ExtractionEngine {
             let output = Self::extract_output_json(&prediction)?;
 
             // Validate if schema validation is enabled
-            if let Some(ref compiled) = compiled_schema {
+            if let Some(compiled) = compiled_schema {
                 match Self::validate_with_compiled(&output, compiled) {
                     Ok(_) => return Ok(output),
                     Err(validation_err) => {
@@ -431,8 +431,7 @@ impl ExtractionEngine {
                                     }
                                     // Add error feedback to context for next attempt
                                     context_with_feedback = format!(
-                                        "{}\n\nPrevious attempt failed validation with error: {}\nPlease correct the output to match the schema.",
-                                        additional_context, validation_err
+                                        "{additional_context}\n\nPrevious attempt failed validation with error: {validation_err}\nPlease correct the output to match the schema."
                                     );
                                     continue;
                                 } else {

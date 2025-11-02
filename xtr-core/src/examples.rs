@@ -127,7 +127,7 @@ fn resolve_example_path(example_file: &Path, relative: &str) -> Result<PathBuf> 
         || None::<&str>,
         |var| Ok::<Option<String>, std::convert::Infallible>(std::env::var(var).ok()),
     )
-    .with_context(|| format!("failed to expand path '{}'", relative))?;
+    .with_context(|| format!("failed to expand path '{relative}'"))?;
     let candidate = PathBuf::from(expanded.as_ref());
     Ok(if candidate.is_absolute() {
         candidate

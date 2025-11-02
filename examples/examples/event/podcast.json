@@ -1,0 +1,37 @@
+{
+  "event_name": "OUTATIME – der Zukunftspodcast",
+  "event_type": "social",
+  "date_time": {
+    "start_date": "2025-11-11",
+    "start_time": "06:00 PM",
+    "end_time": "",
+    "timezone": "",
+    "all_day": false
+  },
+  "location": {
+    "type": "physical",
+    "venue_name": "IoT Xperience Center",
+    "address": "Zukunftsmeile 2",
+    "room": "",
+    "virtual_link": "",
+    "meeting_id": "",
+    "dial_in": ""
+  },
+  "organizer": {
+    "name": "Kristina Harder",
+    "email": "kristina.harder@iem.fraunhofer.de",
+    "phone": "+49 5251 5465-1115",
+    "organization": "Fraunhofer-Institut für Entwurfstechnik Mechatronik IEM"
+  },
+  "description": "A live podcast event featuring a journey through the history and future of computing technologies. The session includes a thought experiment, live recording with audience participation, Q&A, networking, and a sneak peek of the next episode. The event is free and hosted by Fraunhofer IEM in Paderborn.",
+  "tags": [
+    "podcast",
+    "future",
+    "technology",
+    "science",
+    "outatime"
+  ],
+  "special_instructions": "Free entry. Limited seating available. Bring your podcast app to listen and subscribe.",
+  "attendees": [],
+  "agenda": []
+}

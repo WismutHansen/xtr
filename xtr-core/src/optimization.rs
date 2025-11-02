@@ -6,6 +6,8 @@ use anyhow::Result;
 use anyhow::anyhow;
 use bon::Builder;
 use dspy_rs::Evaluator;
+use dspy_rs::FeedbackEvaluator;
+use dspy_rs::FeedbackMetric;
 use dspy_rs::Module;
 use dspy_rs::Optimizable;
 use dspy_rs::Predict;
@@ -13,8 +15,6 @@ use dspy_rs::Prediction;
 use dspy_rs::Predictor;
 use dspy_rs::Signature;
 use dspy_rs::core::Optimizable as OptimizableTrait;
-use dspy_rs::evaluate::FeedbackEvaluator;
-use dspy_rs::evaluate::FeedbackMetric;
 use dspy_rs::optimizer::GEPA;
 use dspy_rs::optimizer::GEPAResult;
 use jsonschema::JSONSchema;
@@ -51,6 +51,12 @@ pub struct ExtractionProgram {
 
     #[builder(default = false)]
     verbose: bool,
+}
+
+impl Default for ExtractionProgram {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl ExtractionProgram {
@@ -93,7 +99,7 @@ impl Module for ExtractionProgram {
                     if self.verbose {
                         eprintln!("Successfully unescaped JSON string");
                     }
-                    let mut fixed_prediction = Prediction::from(prediction);
+                    let mut fixed_prediction = prediction;
                     fixed_prediction
                         .data
                         .insert("output_json".to_string(), inner.into());
@@ -319,8 +325,7 @@ impl FeedbackEvaluator for ExtractionProgram {
             expected_fields.len() - correct - wrong
         ));
         feedback_lines.push(format!(
-            "📈 Precision: {:.2} | Recall: {:.2} | Score: {:.3}",
-            precision, recall, score
+            "📈 Precision: {precision:.2} | Recall: {recall:.2} | Score: {score:.3}"
         ));
 
         if wrong > 0 {
@@ -411,6 +416,15 @@ impl GepaRunner {
             ));
         }
 
+        let mut models = models;
+
+        // Disable caching so that prompt mutations are reflected immediately during the run.
+        models.teacher.lm.cache = false;
+        models.student.lm.cache = false;
+        for fallback in &mut models.fallbacks {
+            fallback.lm.cache = false;
+        }
+
         models.student.configure_global();
 
         let mut program = ExtractionProgram::new();
@@ -430,23 +444,94 @@ impl GepaRunner {
             .collect();
 
         let prompt_model = if let Some(descriptor) = optimization.feedback_models.teacher.clone() {
-            Some(build_model_handle(&descriptor).await?.lm)
+            let mut handle = build_model_handle(&descriptor).await?;
+            handle.lm.cache = false;
+            Some(handle.lm)
         } else {
             Some(models.teacher.lm.clone())
         };
 
-        let gepa = GEPA {
-            num_iterations: usize::max(1, optimization.iterations as usize),
-            minibatch_size: usize::max(1, optimization.batch_size as usize),
-            num_trials: usize::max(1, optimization.rollouts_per_iteration as usize),
-            temperature: optimization.temperature,
-            track_stats: optimization.track_stats,
-            track_best_outputs: optimization.track_best_outputs,
-            max_rollouts: optimization.max_rollouts.map(|v| v as usize),
-            max_lm_calls: (optimization.max_lm_calls > 0)
-                .then_some(optimization.max_lm_calls as usize),
+        let gepa = match (
+            optimization.max_rollouts,
+            optimization.max_lm_calls > 0,
             prompt_model,
-            valset: None,
+        ) {
+            (Some(max_rollouts), true, Some(pm)) => GEPA::builder()
+                .num_iterations(usize::max(1, optimization.iterations as usize))
+                .minibatch_size(usize::max(1, optimization.batch_size as usize))
+                .num_trials(usize::max(1, optimization.rollouts_per_iteration as usize))
+                .temperature(optimization.temperature)
+                .track_stats(optimization.track_stats)
+                .track_best_outputs(optimization.track_best_outputs)
+                .max_rollouts(max_rollouts as usize)
+                .max_lm_calls(optimization.max_lm_calls as usize)
+                .prompt_model(pm)
+                .build(),
+            (Some(max_rollouts), true, None) => GEPA::builder()
+                .num_iterations(usize::max(1, optimization.iterations as usize))
+                .minibatch_size(usize::max(1, optimization.batch_size as usize))
+                .num_trials(usize::max(1, optimization.rollouts_per_iteration as usize))
+                .temperature(optimization.temperature)
+                .track_stats(optimization.track_stats)
+                .track_best_outputs(optimization.track_best_outputs)
+                .max_rollouts(max_rollouts as usize)
+                .max_lm_calls(optimization.max_lm_calls as usize)
+                .build(),
+            (Some(max_rollouts), false, Some(pm)) => GEPA::builder()
+                .num_iterations(usize::max(1, optimization.iterations as usize))
+                .minibatch_size(usize::max(1, optimization.batch_size as usize))
+                .num_trials(usize::max(1, optimization.rollouts_per_iteration as usize))
+                .temperature(optimization.temperature)
+                .track_stats(optimization.track_stats)
+                .track_best_outputs(optimization.track_best_outputs)
+                .max_rollouts(max_rollouts as usize)
+                .prompt_model(pm)
+                .build(),
+            (Some(max_rollouts), false, None) => GEPA::builder()
+                .num_iterations(usize::max(1, optimization.iterations as usize))
+                .minibatch_size(usize::max(1, optimization.batch_size as usize))
+                .num_trials(usize::max(1, optimization.rollouts_per_iteration as usize))
+                .temperature(optimization.temperature)
+                .track_stats(optimization.track_stats)
+                .track_best_outputs(optimization.track_best_outputs)
+                .max_rollouts(max_rollouts as usize)
+                .build(),
+            (None, true, Some(pm)) => GEPA::builder()
+                .num_iterations(usize::max(1, optimization.iterations as usize))
+                .minibatch_size(usize::max(1, optimization.batch_size as usize))
+                .num_trials(usize::max(1, optimization.rollouts_per_iteration as usize))
+                .temperature(optimization.temperature)
+                .track_stats(optimization.track_stats)
+                .track_best_outputs(optimization.track_best_outputs)
+                .max_lm_calls(optimization.max_lm_calls as usize)
+                .prompt_model(pm)
+                .build(),
+            (None, true, None) => GEPA::builder()
+                .num_iterations(usize::max(1, optimization.iterations as usize))
+                .minibatch_size(usize::max(1, optimization.batch_size as usize))
+                .num_trials(usize::max(1, optimization.rollouts_per_iteration as usize))
+                .temperature(optimization.temperature)
+                .track_stats(optimization.track_stats)
+                .track_best_outputs(optimization.track_best_outputs)
+                .max_lm_calls(optimization.max_lm_calls as usize)
+                .build(),
+            (None, false, Some(pm)) => GEPA::builder()
+                .num_iterations(usize::max(1, optimization.iterations as usize))
+                .minibatch_size(usize::max(1, optimization.batch_size as usize))
+                .num_trials(usize::max(1, optimization.rollouts_per_iteration as usize))
+                .temperature(optimization.temperature)
+                .track_stats(optimization.track_stats)
+                .track_best_outputs(optimization.track_best_outputs)
+                .prompt_model(pm)
+                .build(),
+            (None, false, None) => GEPA::builder()
+                .num_iterations(usize::max(1, optimization.iterations as usize))
+                .minibatch_size(usize::max(1, optimization.batch_size as usize))
+                .num_trials(usize::max(1, optimization.rollouts_per_iteration as usize))
+                .temperature(optimization.temperature)
+                .track_stats(optimization.track_stats)
+                .track_best_outputs(optimization.track_best_outputs)
+                .build(),
         };
         let config = serde_json::json!({
             "task_name": task.name,
@@ -467,14 +552,11 @@ impl GepaRunner {
         let eval_batch_size = optimization.batch_size.min(train_examples.len() as u32) as usize;
         let eval_minibatch = &train_examples[..eval_batch_size];
 
-        eprintln!(
-            "\n[DEBUG] Baseline evaluation on {} examples...",
-            eval_batch_size
-        );
+        eprintln!("\n[DEBUG] Baseline evaluation on {eval_batch_size} examples...");
 
         // Get baseline instruction for debugging
         let baseline_instruction = OptimizableTrait::get_signature(&program.solver).instruction();
-        eprintln!("[DEBUG] Baseline instruction: {}", baseline_instruction);
+        eprintln!("[DEBUG] Baseline instruction: {baseline_instruction}");
 
         // Evaluate baseline performance
         let mut baseline_total = 0.0;
@@ -500,7 +582,7 @@ impl GepaRunner {
             }
         }
         let baseline_score = baseline_total / eval_batch_size as f32;
-        eprintln!("[DEBUG] Baseline average score: {:.3}\n", baseline_score);
+        eprintln!("[DEBUG] Baseline average score: {baseline_score:.3}\n");
 
         eprintln!("Running GEPA optimization...");
         let result = gepa
@@ -509,12 +591,9 @@ impl GepaRunner {
 
         // Get optimized instruction for debugging
         let optimized_instruction = OptimizableTrait::get_signature(&program.solver).instruction();
-        eprintln!("\n[DEBUG] Optimized instruction: {}", optimized_instruction);
+        eprintln!("\n[DEBUG] Optimized instruction: {optimized_instruction}");
 
-        eprintln!(
-            "[DEBUG] Final evaluation on {} examples...",
-            eval_batch_size
-        );
+        eprintln!("[DEBUG] Final evaluation on {eval_batch_size} examples...");
 
         // Evaluate optimized performance on the same minibatch
         let mut optimized_total = 0.0;
@@ -598,7 +677,7 @@ fn persist_gepa_result(
     let now = Local::now();
     let date_str = now.format("%Y-%m-%d").to_string();
     let timestamp_str = now.format("%Y%m%d_%H%M%S").to_string();
-    let run_name = format!("{}_{}", task_name, timestamp_str);
+    let run_name = format!("{task_name}_{timestamp_str}");
 
     let optimizations_dir = state_dir
         .join("optimizations")

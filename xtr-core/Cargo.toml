@@ -13,7 +13,7 @@ config = { version = "0.14", default-features = false, features = ["toml"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 shellexpand = "3"
-dspy-rs = { git = "https://github.com/krypticmouse/DSRs", rev = "0506c83b4c26e42d6251569869e5fb5adad7658b", package = "dspy-rs" }
+dspy-rs = { version = "0.7.1", package = "dspy-rs" }
 tokio = { version = "1.40", features = ["macros", "rt-multi-thread"] }
 bon = "3.8.1"
 jsonschema = "0.17"

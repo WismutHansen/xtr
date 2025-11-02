@@ -165,24 +165,13 @@ impl AppPaths {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct AppConfig {
     pub models: ModelSection,
     pub tasks: HashMap<String, TaskConfig>,
     pub storage: StorageSettings,
     pub optimization: OptimizationSection,
     pub mlflow: MlflowSettings,
-}
-
-impl Default for AppConfig {
-    fn default() -> Self {
-        Self {
-            models: ModelSection::default(),
-            tasks: HashMap::new(),
-            storage: StorageSettings::default(),
-            optimization: OptimizationSection::default(),
-            mlflow: MlflowSettings::default(),
-        }
-    }
 }
 
 impl AppConfig {
@@ -214,13 +203,13 @@ impl AppConfig {
             .and_then(|task| task.schema.as_ref())
             .map(|path| resolve_path_value(path, &paths.config_dir))
             .transpose()
-            .with_context(|| format!("failed to resolve schema path for task {}", task_name))?;
+            .with_context(|| format!("failed to resolve schema path for task {task_name}"))?;
 
         let examples_dir = task_config
             .and_then(|task| task.examples.as_ref())
             .map(|path| resolve_path_value(path, &paths.config_dir))
             .transpose()
-            .with_context(|| format!("failed to resolve examples path for task {}", task_name))?;
+            .with_context(|| format!("failed to resolve examples path for task {task_name}"))?;
 
         Ok(ResolvedTaskConfig {
             name: task_name.to_string(),
@@ -238,20 +227,11 @@ impl AppConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct StorageSettings {
     pub data_dir: Option<String>,
     pub state_dir: Option<String>,
     pub cache_dir: Option<String>,
-}
-
-impl Default for StorageSettings {
-    fn default() -> Self {
-        Self {
-            data_dir: None,
-            state_dir: None,
-            cache_dir: None,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -276,6 +256,7 @@ impl Default for MlflowSettings {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct TaskConfig {
     pub schema: Option<String>,
     pub examples: Option<String>,
@@ -283,31 +264,12 @@ pub struct TaskConfig {
     pub include_timestamp: Option<bool>,
 }
 
-impl Default for TaskConfig {
-    fn default() -> Self {
-        Self {
-            schema: None,
-            examples: None,
-            description: None,
-            include_timestamp: None,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct ModelSection {
     pub defaults: ModelDefaults,
     pub tasks: HashMap<String, TaskModelOverrides>,
-}
-
-impl Default for ModelSection {
-    fn default() -> Self {
-        Self {
-            defaults: ModelDefaults::default(),
-            tasks: HashMap::new(),
-        }
-    }
 }
 
 impl ModelSection {
@@ -340,10 +302,7 @@ impl ModelSection {
             let descriptor = spec
                 .into_descriptor("fallback", task_name)
                 .with_context(|| {
-                    format!(
-                        "failed to resolve fallback model {} for task {}",
-                        index, task_name
-                    )
+                    format!("failed to resolve fallback model {index} for task {task_name}")
                 })?;
             fallbacks.push(descriptor);
         }
@@ -390,24 +349,16 @@ impl Default for ModelDefaults {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct TaskModelOverrides {
     pub teacher: Option<ModelSpec>,
     pub student: Option<ModelSpec>,
     pub fallbacks: Vec<ModelSpec>,
 }
 
-impl Default for TaskModelOverrides {
-    fn default() -> Self {
-        Self {
-            teacher: None,
-            student: None,
-            fallbacks: Vec::new(),
-        }
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct ModelSpec {
     pub name: Option<String>,
     pub base_url: Option<String>,
@@ -417,28 +368,11 @@ pub struct ModelSpec {
     pub max_tokens: Option<u32>,
 }
 
-impl Default for ModelSpec {
-    fn default() -> Self {
-        Self {
-            name: None,
-            base_url: None,
-            api_key: None,
-            adapter: None,
-            request_timeout_secs: None,
-            max_tokens: None,
-        }
-    }
-}
-
 impl ModelSpec {
     pub fn into_descriptor(self, role: &str, task_name: &str) -> Result<ModelDescriptor> {
-        let name = self.name.ok_or_else(|| {
-            anyhow!(
-                "model '{}' for task '{}' is missing a name",
-                role,
-                task_name
-            )
-        })?;
+        let name = self
+            .name
+            .ok_or_else(|| anyhow!("model '{role}' for task '{task_name}' is missing a name"))?;
 
         Ok(ModelDescriptor {
             name,
@@ -477,18 +411,10 @@ fn merge_model_specs(base: &ModelSpec, overrides: Option<&ModelSpec>) -> ModelSp
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct OptimizationSection {
     pub defaults: OptimizationSettings,
     pub tasks: HashMap<String, OptimizationSettings>,
-}
-
-impl Default for OptimizationSection {
-    fn default() -> Self {
-        Self {
-            defaults: OptimizationSettings::default(),
-            tasks: HashMap::new(),
-        }
-    }
 }
 
 impl OptimizationSection {
@@ -647,18 +573,10 @@ impl Default for OptimizationSettings {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct FeedbackModelOverrides {
     pub teacher: Option<ModelSpec>,
     pub student: Option<ModelSpec>,
-}
-
-impl Default for FeedbackModelOverrides {
-    fn default() -> Self {
-        Self {
-            teacher: None,
-            student: None,
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -744,7 +662,7 @@ fn expand_path(value: &str) -> Result<String> {
         |var| Ok(env::var(var).ok()),
     )
     .map_err(|error: shellexpand::LookupError<std::env::VarError>| {
-        anyhow!("failed to expand '{}': {}", value, error)
+        anyhow!("failed to expand '{value}': {error}")
     })?;
     Ok(expanded.into_owned())
 }

@@ -4,7 +4,9 @@ use std::fs;
 use std::path::PathBuf;
 
 #[cfg(feature = "mlflow")]
-use mlflow_rs::{experiment::Experiment, run::Run};
+use mlflow_rs::experiment::Experiment;
+#[cfg(feature = "mlflow")]
+use mlflow_rs::run::Run;
 
 pub struct GepaLogger {
     task_name: String,
@@ -33,7 +35,7 @@ impl GepaLogger {
                         .filter(|v| !v.is_empty())
                         .unwrap_or_else(|| {
                             let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
-                            format!("{}/.local/state", home)
+                            format!("{home}/.local/state")
                         }),
                 )
                 .join("xtr")
@@ -55,13 +57,13 @@ impl GepaLogger {
                     Ok(experiment) => match experiment.create_run(Some(&task_name), vec![]) {
                         Ok(run) => Some(run),
                         Err(e) => {
-                            eprintln!("Warning: Failed to create MLflow run: {}", e);
+                            eprintln!("Warning: Failed to create MLflow run: {e}");
                             eprintln!("Continuing with local logging only...");
                             None
                         }
                     },
                     Err(e) => {
-                        eprintln!("Warning: Failed to connect to MLflow at {}: {}", uri, e);
+                        eprintln!("Warning: Failed to connect to MLflow at {uri}: {e}");
                         eprintln!("Continuing with local logging only...");
                         None
                     }
@@ -89,12 +91,13 @@ impl GepaLogger {
     }
 
     fn generate_run_id() -> String {
-        use std::time::{SystemTime, UNIX_EPOCH};
+        use std::time::SystemTime;
+        use std::time::UNIX_EPOCH;
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
-        format!("{}", timestamp)
+        format!("{timestamp}")
     }
 
     fn log_to_file(&self, name: &str, content: &str) -> Result<()> {
@@ -154,21 +157,19 @@ impl GepaLogger {
 
             for (idx, candidate) in result.all_candidates.iter().enumerate() {
                 let _ = run.log_parameter(
-                    &format!("candidate_{}_instruction", idx),
+                    &format!("candidate_{idx}_instruction"),
                     &candidate.instruction,
                 );
 
                 let _ = run.log_metric(
-                    &format!("candidate_{}_avg_score", idx),
+                    &format!("candidate_{idx}_avg_score"),
                     candidate.average_score(),
                     None,
                 );
 
                 if let Some(parent_id) = candidate.parent_id {
-                    let _ = run.log_parameter(
-                        &format!("candidate_{}_parent", idx),
-                        &parent_id.to_string(),
-                    );
+                    let _ = run
+                        .log_parameter(&format!("candidate_{idx}_parent"), &parent_id.to_string());
                 }
             }
 
@@ -203,10 +204,10 @@ impl GepaLogger {
 
             let mut evolution_table = String::new();
             for (generation, score) in &result.evolution_history {
-                evolution_table.push_str(&format!("  Generation {}: {:.4}\n", generation, score));
+                evolution_table.push_str(&format!("  Generation {generation}: {score:.4}\n"));
             }
 
-            self.log_to_file("summary.txt", &format!("{}{}", summary, evolution_table))?;
+            self.log_to_file("summary.txt", &format!("{summary}{evolution_table}"))?;
 
             let mut candidates_md = String::from("# Candidates\n\n");
             for (idx, candidate) in result.all_candidates.iter().enumerate() {

@@ -1,6 +1,7 @@
 use anyhow::Result;
 use std::fs;
-use std::time::{Duration, SystemTime};
+use std::time::Duration;
+use std::time::SystemTime;
 use xtr_core::ExtractionEngine;
 
 pub fn handle_activate(engine: &ExtractionEngine, task: &str, run: &str) -> Result<()> {

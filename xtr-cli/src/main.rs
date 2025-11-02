@@ -3,12 +3,14 @@ use anyhow::Result;
 use clap::Parser;
 use clap::Subcommand;
 use clap::ValueEnum;
-use std::io::{self, Read};
+use std::io::Read;
+use std::io::{self};
 use xtr_core::ExtractionEngine;
 use xtr_core::config::FeedbackModelOverrides;
 use xtr_core::config::OptimizationSettings;
 
 mod commands;
+mod create;
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum CliValidationMode {
@@ -76,6 +78,12 @@ struct Cli {
 enum Commands {
     #[command(about = "Show configuration and task information")]
     Info,
+
+    #[command(about = "Create resources (schemas, tasks, etc.)")]
+    Create {
+        #[command(subcommand)]
+        resource: CreateCommands,
+    },
 
     #[command(about = "Run GEPA optimization for a task")]
     Optimize {
@@ -191,6 +199,21 @@ enum Commands {
     },
 }
 
+#[derive(Subcommand)]
+enum CreateCommands {
+    #[command(about = "Generate a JSON schema from a JSON file")]
+    Schema {
+        #[arg(help = "Path to the JSON file")]
+        input: String,
+
+        #[arg(
+            long,
+            help = "Schema name (defaults to input filename without extension)"
+        )]
+        name: Option<String>,
+    },
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     increase_fd_limit()?;
@@ -199,6 +222,11 @@ async fn main() -> Result<()> {
     let engine = ExtractionEngine::load("xtr")?;
 
     match cli.command {
+        Commands::Create { resource } => match resource {
+            CreateCommands::Schema { input, name } => {
+                create::handle_create_schema(&input, name.as_deref())?;
+            }
+        },
         Commands::Optimize {
             task,
             iterations,

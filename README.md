@@ -19,6 +19,11 @@ XTR extracts structured data from unstructured text using language models and au
 ## Quick Start
 
 ```bash
+# Generate a schema from a JSON file
+xtr create schema example.json --name my_schema
+# Or let it use the filename automatically
+xtr create schema example.json
+
 # Extract contact details
 echo "Contact John at john@example.com" | xtr get contact_details
 
@@ -122,6 +127,28 @@ curl -s https://example.com | pup '.contact-info text{}' | xtr get contact_detai
 ```
 
 3. **Use a model with larger context**: Switch to models supporting 32K+ tokens (e.g., Qwen2.5, Llama 3.1)
+
+## Schema Generation
+
+XTR can automatically generate JSON schemas from example JSON files:
+
+```bash
+# Generate schema from a JSON file (uses filename as schema name)
+xtr create schema examples/data/contact.json
+
+# Specify a custom schema name
+xtr create schema examples/data/contact.json --name contact_details
+
+# The generated schema will be saved to examples/schemas/<name>.json
+```
+
+Generated schemas include:
+- Inferred types for all fields (string, number, boolean, array, object)
+- Required field detection
+- Nested object support
+- Array item type inference
+
+You can then reference the generated schema in your task configuration or edit it manually to add validation rules, descriptions, or constraints.
 
 ## Task Configuration
 

@@ -1,0 +1,45 @@
+{
+  "title": "The Dark Knight",
+  "imdb_url": "https://www.imdb.com/title/tt0468569/",
+  "video_gallery": "https://www.imdb.com/title/tt0468569/videogallery/?ref_=tt_vids_sm",
+  "summary": "Reviewers say 'The Dark Knight' is celebrated for its intricate plot, stellar performances, and profound themes. Heath Ledger's Joker is often hailed as a career-defining role, overshadowing Christian Bale's Batman. The film's examination of morality and heroism is widely praised. Christopher Nolan's direction and Hans Zimmer's score enhance the experience. However, some criticize the pacing and character arcs. Despite this, it remains a pivotal film in the superhero genre.",
+  "featured_reviews": [
+    {
+      "title": "The Dark Knight",
+      "review": "Confidently directed, dark, brooding, and packed with impressive action sequences and a complex story, The Dark Knight includes a career-defining turn from Heath Ledger as well as other Oscar worthy performances, TDK remains not only the best Batman movie, but comic book movie ever created."
+    },
+    {
+      "title": "9.4 Top Contender for 'Best Superhero Movie'",
+      "ratings": {
+        "enjoyment": 10,
+        "recommendation": 10,
+        "acting": 9,
+        "writing": 10,
+        "intangibles": 8
+      },
+      "review": "From start to finish The Dark Knight has you on the edge of your seat, enjoying every minute. Bale is the gold standard Batman; Ledger is the nightmare villain. The writing is perfection and the visuals and soundtrack perfectly match Gotham’s dark tone."
+    },
+    {
+      "title": "This town deserves a better class of criminal!",
+      "review": "This movie is a work of art. The finest sequel ever made. Heath Ledger's Joker is the best movie character I have ever seen. Avengers Endgame is great, but The Dark Knight is much better. The best Batman, Joker, DC movie, superhero movie—and for me, the best movie ever!"
+    },
+    {
+      "title": "Fantastic!",
+      "review": "I LOVE this movie. One of my favorites of all time. A bit long and Batman’s voice is odd, but everything else is top notch—the acting, story, atmosphere, and action scenes are all amazing. If you haven't seen it, watch it now!"
+    },
+    {
+      "title": "MASTERPIECE",
+      "review": "Great story, great acting, thrilling twists. After watching Joker in 2019, I had to come back and give The Dark Knight a 10. Heath Ledger’s performance is exceptional."
+    }
+  ],
+  "soundtrack": {
+    "preview_link": "https://www.imdb.com/title/tt0468569/?ref_=chttp_t_3#soundtrack_embed_widget",
+    "listen_on": "Amazon Music"
+  },
+  "related_links": {
+    "more_like_this": "https://www.imdb.com/interest/all/?ref_=tt_rin_sm",
+    "related_interests": "https://www.imdb.com/interest/all/?ref_=tt_rin_sm",
+    "faq": "https://www.imdb.com/title/tt0468569/faq/?ref_=tt_faq_sm",
+    "contribute": "https://contribute.imdb.com/updates?ref_=tt_cn_edt&edit=legacy%2Ftitle%2Ftt0468569%2F"
+  }
+}
