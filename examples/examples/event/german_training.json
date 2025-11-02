@@ -1,0 +1,93 @@
+{
+  "input_text": "MITARBEITER-SCHULUNG: DATENSCHUTZ UND DSGVO\n\nMontag, 28. April 2025\n9:00 - 13:00 Uhr (MESZ)\n\nStandort: Hauptverwaltung, Schulungsraum 1. OG\nKarlsplatz 12, 80335 M\u00fcnchen\nOnline-Teilnahme: https://teams.microsoft.com/schulung-dsgvo\nMeeting-ID: 987-654-321\n\nReferent: Rechtsanwalt Dr. Peter M\u00fcller (Datenschutzbeauftragter)\nAssistenz: Sandra Wagner (Compliance-Team)\n\nAblauf:\n09:00 - Einf\u00fchrung und Begr\u00fc\u00dfung (Dr. M\u00fcller)\n09:15 - Grundlagen DSGVO (60 Min)\n10:15 - Kaffeepause (15 Min)\n10:30 - Praktische Anwendung im Unternehmen (90 Min)\n12:00 - Mittagspause (30 Min)\n12:30 - Fallbeispiele und Diskussion (30 Min)\n\nPflichtveranstaltung f\u00fcr alle Mitarbeiter mit Datenzugriff\n\nAnmeldung bis 21. April: hr@unternehmen.de\n\nUnterlagen:\n- DSGVO-Handbuch: https://intranet.unternehmen.de/dsgvo-handbuch.pdf\n- Checkliste: https://intranet.unternehmen.de/checkliste.pdf\n\nPersonalabteilung\nhr@unternehmen.de | +49 89 55566677\n",
+  "expected_json": {
+    "event_name": "Mitarbeiter-Schulung: Datenschutz und DSGVO",
+    "event_type": "training",
+    "date_time": {
+      "start_date": "2025-04-28",
+      "start_time": "9:00 AM",
+      "end_time": "1:00 PM",
+      "timezone": "MESZ",
+      "all_day": false
+    },
+    "location": {
+      "type": "hybrid",
+      "venue_name": "Hauptverwaltung",
+      "address": "Karlsplatz 12, 80335 M\u00fcnchen",
+      "room": "Schulungsraum 1. OG",
+      "virtual_link": "https://teams.microsoft.com/schulung-dsgvo",
+      "meeting_id": "987-654-321"
+    },
+    "organizer": {
+      "name": "Personalabteilung",
+      "email": "hr@unternehmen.de",
+      "phone": "+49 89 55566677"
+    },
+    "attendees": [
+      {
+        "name": "Dr. Peter M\u00fcller",
+        "role": "speaker",
+        "required": true
+      },
+      {
+        "name": "Sandra Wagner",
+        "role": "moderator"
+      }
+    ],
+    "agenda": [
+      {
+        "time": "9:00 AM",
+        "topic": "Einf\u00fchrung und Begr\u00fc\u00dfung",
+        "speaker": "Dr. M\u00fcller"
+      },
+      {
+        "time": "9:15 AM",
+        "topic": "Grundlagen DSGVO",
+        "duration": "60 min"
+      },
+      {
+        "time": "10:15 AM",
+        "topic": "Kaffeepause",
+        "duration": "15 min"
+      },
+      {
+        "time": "10:30 AM",
+        "topic": "Praktische Anwendung im Unternehmen",
+        "duration": "90 min"
+      },
+      {
+        "time": "12:00 PM",
+        "topic": "Mittagspause",
+        "duration": "30 min"
+      },
+      {
+        "time": "12:30 PM",
+        "topic": "Fallbeispiele und Diskussion",
+        "duration": "30 min"
+      }
+    ],
+    "registration": {
+      "required": true,
+      "deadline": "2025-04-21"
+    },
+    "attachments": [
+      {
+        "name": "DSGVO-Handbuch",
+        "url": "https://intranet.unternehmen.de/dsgvo-handbuch.pdf",
+        "type": "handout"
+      },
+      {
+        "name": "Checkliste",
+        "url": "https://intranet.unternehmen.de/checkliste.pdf",
+        "type": "handout"
+      }
+    ],
+    "tags": [
+      "training",
+      "datenschutz",
+      "dsgvo",
+      "pflicht"
+    ],
+    "special_instructions": "Pflichtveranstaltung f\u00fcr alle Mitarbeiter mit Datenzugriff"
+  }
+}

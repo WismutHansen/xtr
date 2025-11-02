@@ -1,0 +1,70 @@
+{
+  "input_text": "Kostenfreies Webinar: Einf\u00fchrung in Python Programmierung\n\nMittwoch, 12. M\u00e4rz 2025\n19:00 - 20:30 Uhr (MEZ)\n\nOnline via Zoom\nLink wird nach Anmeldung verschickt\nTeilnahme-Code: 111-222-333\n\nReferentin: Dr. Sarah Klein, Informatikerin und Autorin\nModeration: Max Huber\n\nThemen:\n19:00 - Willkommen und Einf\u00fchrung\n19:10 - Was ist Python? (20 Min)\n19:30 - Erste Schritte und Syntax (30 Min)\n20:00 - Live-Coding-Demo (20 Min)\n20:20 - Fragen & Antworten (10 Min)\n\nKostenlos | Max. 200 Teilnehmer\nAnmeldung erforderlich bis 11. M\u00e4rz: webinar@codecademy.de\n\nAufzeichnung verf\u00fcgbar f\u00fcr registrierte Teilnehmer\n\nCode Academy Deutschland\nwebinar@codecademy.de\n",
+  "expected_json": {
+    "event_name": "Einf\u00fchrung in Python Programmierung",
+    "event_type": "webinar",
+    "date_time": {
+      "start_date": "2025-03-12",
+      "start_time": "7:00 PM",
+      "end_time": "8:30 PM",
+      "timezone": "MEZ",
+      "all_day": false
+    },
+    "location": {
+      "type": "virtual",
+      "meeting_id": "111-222-333"
+    },
+    "organizer": {
+      "name": "Code Academy Deutschland",
+      "email": "webinar@codecademy.de"
+    },
+    "attendees": [
+      {
+        "name": "Dr. Sarah Klein",
+        "role": "speaker"
+      },
+      {
+        "name": "Max Huber",
+        "role": "moderator"
+      }
+    ],
+    "agenda": [
+      {
+        "time": "7:00 PM",
+        "topic": "Willkommen und Einf\u00fchrung"
+      },
+      {
+        "time": "7:10 PM",
+        "topic": "Was ist Python?",
+        "duration": "20 min"
+      },
+      {
+        "time": "7:30 PM",
+        "topic": "Erste Schritte und Syntax",
+        "duration": "30 min"
+      },
+      {
+        "time": "8:00 PM",
+        "topic": "Live-Coding-Demo",
+        "duration": "20 min"
+      },
+      {
+        "time": "8:20 PM",
+        "topic": "Fragen & Antworten",
+        "duration": "10 min"
+      }
+    ],
+    "registration": {
+      "required": true,
+      "deadline": "2025-03-11",
+      "fee": "Kostenlos",
+      "capacity": 200
+    },
+    "tags": [
+      "python",
+      "programmierung",
+      "webinar"
+    ],
+    "special_instructions": "Aufzeichnung verf\u00fcgbar f\u00fcr registrierte Teilnehmer. Link wird nach Anmeldung verschickt."
+  }
+}

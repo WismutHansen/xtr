@@ -10,6 +10,7 @@ pub mod optimization;
 pub use config::AppConfig;
 pub use config::AppPaths;
 pub use config::ConfigBundle;
+pub use config::MetricsConfig;
 pub use config::ModelDescriptor;
 pub use config::OptimizationSettings;
 pub use config::ResolvedModelConfig;

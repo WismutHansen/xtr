@@ -1,0 +1,47 @@
+{
+  "input_text": "Robert Chen\nChief Executive Officer\nApex Financial Services\n\nFor all meeting requests and inquiries, please contact my assistant:\n\nExecutive Assistant: Maria Garcia\nDirect Line: (555) 789-0123\nEmail: m.garcia@apexfinancial.com\n\nRobert Chen - Direct Contact (Urgent Only):\nMobile: (555) 321-9876\nEmail: r.chen@apexfinancial.com\n\nCorporate Headquarters:\n4500 Park Avenue, 28th Floor\nNew York, NY 10022\n\nBoard Member: Tech Innovation Foundation\nAdvisory Role: StartupAccelerator NYC\n\nLinkedIn: linkedin.com/in/robertchen-ceo\n",
+  "expected_json": {
+    "name": {
+      "full_name": "Robert Chen",
+      "first_name": "Robert",
+      "last_name": "Chen"
+    },
+    "job_title": "Chief Executive Officer",
+    "company": {
+      "name": "Apex Financial Services"
+    },
+    "email_addresses": [
+      {
+        "email": "r.chen@apexfinancial.com",
+        "type": "work",
+        "primary": true
+      }
+    ],
+    "phone_numbers": [
+      {
+        "number": "(555) 321-9876",
+        "type": "mobile",
+        "primary": true
+      }
+    ],
+    "addresses": [
+      {
+        "type": "work",
+        "street": "4500 Park Avenue, 28th Floor",
+        "city": "New York",
+        "state": "NY",
+        "postal_code": "10022",
+        "full_address": "4500 Park Avenue, 28th Floor, New York, NY 10022"
+      }
+    ],
+    "social_media": {
+      "linkedin": "linkedin.com/in/robertchen-ceo"
+    },
+    "assistant": {
+      "name": "Maria Garcia",
+      "email": "m.garcia@apexfinancial.com",
+      "phone": "(555) 789-0123"
+    },
+    "notes": "Board Member: Tech Innovation Foundation, Advisory Role: StartupAccelerator NYC. Contact assistant for meeting requests."
+  }
+}

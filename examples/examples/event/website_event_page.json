@@ -1,0 +1,106 @@
+{
+  "input_text": "AI & Ethics Symposium 2025\nExploring the Intersection of Technology and Responsibility\n\nJoin leading researchers, ethicists, policymakers, and industry leaders to discuss \nthe ethical implications of artificial intelligence in modern society.\n\nEvent Details\nDate: June 15-16, 2025\nTime: 9:00 AM - 6:00 PM (Day 1) | 9:00 AM - 4:00 PM (Day 2)\nVenue: Stanford University, Memorial Auditorium\n551 Serra Mall, Stanford, CA 94305\nFormat: Hybrid (In-person + Virtual Livestream)\n\nKeynote Speakers\n\u2022 Dr. Timnit Gebru - Founder, DAIR Institute\n\u2022 Prof. Stuart Russell - UC Berkeley Computer Science\n\u2022 Dr. Joy Buolamwini - Algorithmic Justice League\n\u2022 Yann LeCun - Chief AI Scientist, Meta\n\nDay 1 - June 15\n9:00 AM - Registration & Coffee\n10:00 AM - Opening Keynote: \"The State of AI Ethics\"\n11:30 AM - Panel: Bias and Fairness in Machine Learning\n1:00 PM - Lunch & Networking\n2:30 PM - Workshop: Implementing Ethical AI Frameworks\n4:00 PM - Lightning Talks\n6:00 PM - Reception\n\nDay 2 - June 16\n9:00 AM - Keynote: \"AI Regulation and Policy\"\n10:30 AM - Breakout Sessions\n12:00 PM - Lunch\n1:00 PM - Panel: Industry Perspectives\n2:30 PM - Closing Remarks\n\nRegistration\nEarly Bird (until May 1):\nStudents: $99 | Academics: $299 | Industry: $499 | Virtual: $149\n\nRegular Price (after May 1):\nStudents: $149 | Academics: $399 | Industry: $599 | Virtual: $199\n\nLimited capacity: 500 in-person attendees\n\nOrganized by Stanford HAI (Human-Centered AI Institute)\nContact: events@hai.stanford.edu | (650) 555-0100\nParking: Campus Parking Structures ($15/day)\n\nCOVID-19 Policy: Proof of vaccination required for in-person. Masks optional.\n\nFollow: @StanfordHAI #AIEthics2025\n",
+  "expected_json": {
+    "event_name": "AI & Ethics Symposium 2025",
+    "event_type": "conference",
+    "date_time": {
+      "start_date": "2025-06-15",
+      "start_time": "9:00 AM",
+      "end_date": "2025-06-16",
+      "end_time": "4:00 PM",
+      "all_day": false
+    },
+    "location": {
+      "type": "hybrid",
+      "venue_name": "Stanford University",
+      "address": "551 Serra Mall, Stanford, CA 94305",
+      "room": "Memorial Auditorium"
+    },
+    "organizer": {
+      "name": "Stanford HAI (Human-Centered AI Institute)",
+      "email": "events@hai.stanford.edu",
+      "phone": "(650) 555-0100"
+    },
+    "attendees": [
+      {
+        "name": "Dr. Timnit Gebru",
+        "role": "keynote speaker"
+      },
+      {
+        "name": "Prof. Stuart Russell",
+        "role": "keynote speaker"
+      },
+      {
+        "name": "Dr. Joy Buolamwini",
+        "role": "keynote speaker"
+      },
+      {
+        "name": "Yann LeCun",
+        "role": "keynote speaker"
+      }
+    ],
+    "description": "Symposium bringing together leading researchers, ethicists, policymakers, and industry leaders to discuss the ethical implications of artificial intelligence in modern society",
+    "agenda": [
+      {
+        "time": "9:00 AM",
+        "topic": "Registration & Coffee"
+      },
+      {
+        "time": "10:00 AM",
+        "topic": "Opening Keynote: The State of AI Ethics"
+      },
+      {
+        "time": "11:30 AM",
+        "topic": "Panel: Bias and Fairness in Machine Learning"
+      },
+      {
+        "time": "1:00 PM",
+        "topic": "Lunch & Networking"
+      },
+      {
+        "time": "2:30 PM",
+        "topic": "Workshop: Implementing Ethical AI Frameworks"
+      },
+      {
+        "time": "4:00 PM",
+        "topic": "Lightning Talks"
+      },
+      {
+        "time": "6:00 PM",
+        "topic": "Reception"
+      },
+      {
+        "time": "9:00 AM",
+        "topic": "Keynote: AI Regulation and Policy"
+      },
+      {
+        "time": "10:30 AM",
+        "topic": "Breakout Sessions"
+      },
+      {
+        "time": "12:00 PM",
+        "topic": "Lunch"
+      },
+      {
+        "time": "1:00 PM",
+        "topic": "Panel: Industry Perspectives"
+      },
+      {
+        "time": "2:30 PM",
+        "topic": "Closing Remarks"
+      }
+    ],
+    "registration": {
+      "required": true,
+      "deadline": "2025-05-01",
+      "fee": "Early bird - Students: $99, Academics: $299, Industry: $499, Virtual: $149. Regular - Students: $149, Academics: $399, Industry: $599, Virtual: $199",
+      "capacity": 500
+    },
+    "tags": [
+      "AI",
+      "ethics",
+      "symposium"
+    ],
+    "special_instructions": "Parking available at Campus Parking Structures ($15/day). COVID-19 Policy: Proof of vaccination required for in-person attendance. Masks optional."
+  }
+}

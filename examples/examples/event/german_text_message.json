@@ -1,0 +1,15 @@
+{
+  "input_text": "Hi! Erinnerung: Morgen Projektmeeting um 10 Uhr im Besprechungsraum A.\n\nAgenda: Q2 Planung besprechen\n\nBis morgen!\n",
+  "expected_json": {
+    "event_name": "Projektmeeting",
+    "event_type": "meeting",
+    "date_time": {
+      "start_time": "10:00 AM"
+    },
+    "location": {
+      "type": "physical",
+      "room": "Besprechungsraum A"
+    },
+    "description": "Q2 Planung besprechen"
+  }
+}

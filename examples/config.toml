@@ -3,6 +3,31 @@
 # to customize defaults. Values support environment variable expansion like
 # $XDG_CONFIG_HOME and home expansion via ~.
 
+[metrics]
+# Configuration for evaluation metrics used during optimization.
+# These control how extraction quality is scored.
+
+# Weight for extra/hallucinated fields (0.0-1.0, default: 0.5)
+# Lower values = lighter penalty for hallucinations vs wrong values
+extra_field_weight = 0.5
+
+# Beta parameter for F-beta score (default: 1.5)
+# Values > 1.0 favor recall over precision, < 1.0 favor precision
+# 1.5 means recall is 1.5x more important than precision
+beta = 1.5
+
+# Base score awarded for valid JSON parsing (default: 0.2)
+base_parse_score = 0.2
+
+# Additional score for schema validation (default: 0.2)
+base_schema_score = 0.2
+
+# Weight for field-level quality (F-beta of precision/recall) (default: 0.5)
+field_weight = 0.5
+
+# Weight for coverage bonus (encourages completeness) (default: 0.1)
+coverage_weight = 0.1
+
 [models.defaults.teacher]
 name = "llama-teacher"
 base_url = "http://localhost:8080/v1"

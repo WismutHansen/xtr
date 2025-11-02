@@ -1,0 +1,65 @@
+{
+  "input_text": "Subject: You're Invited: Annual Product Launch Event\n\nHi Team,\n\nJoin us for our Annual Product Launch Event!\n\nDate: Friday, April 12th, 2025\nTime: 2:00 PM - 5:00 PM Pacific Time\nLocation: The Grand Ballroom at Hyatt Regency, 5 Embarcadero Center, San Francisco, CA 94111\nVirtual option: https://stream.company.io/product-launch-2025\n\nAgenda:\n- 2:00 PM: Registration and Welcome Reception\n- 2:30 PM: CEO Keynote by Amanda Rodriguez\n- 3:15 PM: Product Demos and Breakout Sessions\n- 4:15 PM: Panel Q&A with Product Team\n- 4:45 PM: Networking and Cocktail Hour\n\nPlease RSVP by April 5th to events@company.io. Space limited to 300 in-person attendees.\n\nDress code: Business casual\nParking: Valet parking available\n\nBest regards,\nMaria Chen\nVP of Marketing\nmaria.chen@company.io\n(415) 555-7890\n",
+  "expected_json": {
+    "event_name": "Annual Product Launch Event",
+    "event_type": "presentation",
+    "date_time": {
+      "start_date": "2025-04-12",
+      "start_time": "2:00 PM",
+      "end_time": "5:00 PM",
+      "timezone": "PST",
+      "all_day": false
+    },
+    "location": {
+      "type": "hybrid",
+      "venue_name": "Hyatt Regency",
+      "address": "5 Embarcadero Center, San Francisco, CA 94111",
+      "room": "The Grand Ballroom",
+      "virtual_link": "https://stream.company.io/product-launch-2025"
+    },
+    "organizer": {
+      "name": "Maria Chen",
+      "email": "maria.chen@company.io",
+      "phone": "(415) 555-7890",
+      "organization": "VP of Marketing"
+    },
+    "attendees": [
+      {
+        "name": "Amanda Rodriguez",
+        "role": "speaker"
+      }
+    ],
+    "agenda": [
+      {
+        "time": "2:00 PM",
+        "topic": "Registration and Welcome Reception"
+      },
+      {
+        "time": "2:30 PM",
+        "topic": "CEO Keynote",
+        "speaker": "Amanda Rodriguez"
+      },
+      {
+        "time": "3:15 PM",
+        "topic": "Product Demos and Breakout Sessions"
+      },
+      {
+        "time": "4:15 PM",
+        "topic": "Panel Q&A with Product Team"
+      },
+      {
+        "time": "4:45 PM",
+        "topic": "Networking and Cocktail Hour"
+      }
+    ],
+    "registration": {
+      "capacity": 300
+    },
+    "rsvp": {
+      "required": true,
+      "deadline": "2025-04-05",
+      "contact": "events@company.io"
+    },
+    "special_instructions": "Business casual dress code. Valet parking available."
+  }
+}

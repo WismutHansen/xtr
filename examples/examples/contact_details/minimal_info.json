@@ -1,0 +1,16 @@
+{
+  "input_text": "John Smith\njohn.smith@email.com\n",
+  "expected_json": {
+    "name": {
+      "full_name": "John Smith",
+      "first_name": "John",
+      "last_name": "Smith"
+    },
+    "email_addresses": [
+      {
+        "email": "john.smith@email.com",
+        "primary": true
+      }
+    ]
+  }
+}

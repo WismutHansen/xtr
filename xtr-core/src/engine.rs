@@ -123,6 +123,7 @@ impl ExtractionEngine {
             task,
             optimization,
             models,
+            metrics_config: self.bundle.config.metrics.clone(),
             #[cfg(feature = "mlflow")]
             mlflow_tracking_uri: self.bundle.config.mlflow.tracking_uri.clone(),
             #[cfg(feature = "mlflow")]

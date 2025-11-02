@@ -1,0 +1,61 @@
+{
+  "input_text": "\u540d\u524d: \u7530\u4e2d \u592a\u90ce (Tanaka Taro)\n\u5f79\u8077: \u30a2\u30b8\u30a2\u592a\u5e73\u6d0b\u5730\u57df\u30de\u30cd\u30fc\u30b8\u30e3\u30fc\n\u4f1a\u793e: \u30b0\u30ed\u30fc\u30d0\u30eb\u30c6\u30c3\u30af\u682a\u5f0f\u4f1a\u793e\n\nEmail (work): t.tanaka@globaltech.co.jp\nEmail (personal): taro.tanaka@example.com\n\nMobile: +81 90-1234-5678\nOffice: +81 3-5678-1234\nFax: +81 3-5678-1235\n\n\u4f4f\u6240:\n\u3012100-0001\n\u6771\u4eac\u90fd\u5343\u4ee3\u7530\u533a\u5343\u4ee3\u75301-1-1\n\u30d3\u30b8\u30cd\u30b9\u30bf\u30ef\u30fc10\u968e\n\nBusiness hours: 9:00-18:00 JST (Japan Standard Time)\nLanguages: Japanese (native), English (business level), Mandarin Chinese (conversational)\n\nLinkedIn: linkedin.com/in/tanaka-taro\nWeChat ID: tanaka_taro_2024\n",
+  "expected_json": {
+    "name": {
+      "full_name": "\u7530\u4e2d \u592a\u90ce (Tanaka Taro)",
+      "first_name": "Taro",
+      "last_name": "Tanaka"
+    },
+    "job_title": "\u30a2\u30b8\u30a2\u592a\u5e73\u6d0b\u5730\u57df\u30de\u30cd\u30fc\u30b8\u30e3\u30fc",
+    "company": {
+      "name": "\u30b0\u30ed\u30fc\u30d0\u30eb\u30c6\u30c3\u30af\u682a\u5f0f\u4f1a\u793e"
+    },
+    "email_addresses": [
+      {
+        "email": "t.tanaka@globaltech.co.jp",
+        "type": "work",
+        "primary": true
+      },
+      {
+        "email": "taro.tanaka@example.com",
+        "type": "personal"
+      }
+    ],
+    "phone_numbers": [
+      {
+        "number": "+81 90-1234-5678",
+        "type": "mobile",
+        "primary": true
+      },
+      {
+        "number": "+81 3-5678-1234",
+        "type": "work"
+      },
+      {
+        "number": "+81 3-5678-1235",
+        "type": "fax"
+      }
+    ],
+    "addresses": [
+      {
+        "type": "work",
+        "street": "\u5343\u4ee3\u7530\u533a\u5343\u4ee3\u75301-1-1, \u30d3\u30b8\u30cd\u30b9\u30bf\u30ef\u30fc10\u968e",
+        "city": "\u6771\u4eac\u90fd",
+        "postal_code": "100-0001",
+        "country": "Japan",
+        "full_address": "\u3012100-0001 \u6771\u4eac\u90fd\u5343\u4ee3\u7530\u533a\u5343\u4ee3\u75301-1-1 \u30d3\u30b8\u30cd\u30b9\u30bf\u30ef\u30fc10\u968e"
+      }
+    ],
+    "social_media": {
+      "linkedin": "linkedin.com/in/tanaka-taro",
+      "other": [
+        {
+          "platform": "WeChat",
+          "handle": "tanaka_taro_2024"
+        }
+      ]
+    },
+    "timezone": "JST",
+    "language": "Japanese"
+  }
+}

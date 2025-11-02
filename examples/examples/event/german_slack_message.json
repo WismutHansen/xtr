@@ -1,0 +1,28 @@
+{
+  "input_text": "@channel Team-Event n\u00e4chste Woche!\n\nWir gehen zusammen bowlen \ud83c\udfb3\n\nWann: Donnerstag, 20.02.2025, ab 18:30 Uhr\nWo: Bowling World, Hauptstra\u00dfe 123, Hamburg\n\nBitte bis Montag Bescheid geben ob ihr dabei seid!\nMax 20 Leute, wer zuerst kommt...\n\nKosten: 15\u20ac pro Person (inkl. Schuhe und 2 Getr\u00e4nke)\n\nLisa organisiert - Fragen an @lisa\n",
+  "expected_json": {
+    "event_name": "Team-Event Bowling",
+    "event_type": "social",
+    "date_time": {
+      "start_date": "2025-02-20",
+      "start_time": "6:30 PM"
+    },
+    "location": {
+      "type": "physical",
+      "venue_name": "Bowling World",
+      "address": "Hauptstra\u00dfe 123, Hamburg"
+    },
+    "organizer": {
+      "name": "Lisa"
+    },
+    "registration": {
+      "fee": "15 \u20ac",
+      "capacity": 20
+    },
+    "tags": [
+      "team-building",
+      "social"
+    ],
+    "special_instructions": "Kosten inkl. Schuhe und 2 Getr\u00e4nke"
+  }
+}

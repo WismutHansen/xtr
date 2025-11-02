@@ -1,0 +1,50 @@
+{
+  "input_text": "DIGITALE TRANSFORMATION KONFERENZ 2025\n\n3-t\u00e4gige Fachkonferenz f\u00fcr F\u00fchrungskr\u00e4fte\n\n16. - 18. Juni 2025\nMesse Frankfurt, Halle 3\nLudwig-Erhard-Anlage 1, 60327 Frankfurt am Main\n\nKeynote-Speaker:\n\u2022 Prof. Dr. Anna Schneider (TU M\u00fcnchen) - \"Digitalisierung im Mittelstand\"\n\u2022 Dr. Michael Wagner (SAP) - \"KI-gest\u00fctzte Gesch\u00e4ftsprozesse\"\n\u2022 Julia Krause (McKinsey) - \"Change Management 4.0\"\n\nProgramm-Highlights:\nTag 1: Digitale Gesch\u00e4ftsmodelle\nTag 2: Cloud & Infrastruktur, Cybersecurity\nTag 3: Innovation & Future Trends\n\n300+ Teilnehmer erwartet | 40+ Vortr\u00e4ge | Networking-Abend am ersten Tag\n\nFr\u00fchbucher (bis 15. Mai): 899 \u20ac | Regul\u00e4r: 1.199 \u20ac\n\nAnmeldung: https://digital-transformation.de/konferenz\nKontakt: info@digital-transformation.de | +49 69 12345678\n\nVeranstalter: Deutsche Digitalisierungs-Initiative e.V.\n",
+  "expected_json": {
+    "event_name": "Digitale Transformation Konferenz 2025",
+    "event_type": "conference",
+    "date_time": {
+      "start_date": "2025-06-16",
+      "end_date": "2025-06-18",
+      "all_day": false
+    },
+    "location": {
+      "type": "physical",
+      "venue_name": "Messe Frankfurt",
+      "address": "Ludwig-Erhard-Anlage 1, 60327 Frankfurt am Main",
+      "room": "Halle 3"
+    },
+    "organizer": {
+      "name": "Deutsche Digitalisierungs-Initiative e.V.",
+      "email": "info@digital-transformation.de",
+      "phone": "+49 69 12345678"
+    },
+    "attendees": [
+      {
+        "name": "Prof. Dr. Anna Schneider",
+        "role": "keynote speaker"
+      },
+      {
+        "name": "Dr. Michael Wagner",
+        "role": "keynote speaker"
+      },
+      {
+        "name": "Julia Krause",
+        "role": "keynote speaker"
+      }
+    ],
+    "description": "3-t\u00e4gige Fachkonferenz f\u00fcr F\u00fchrungskr\u00e4fte zum Thema digitale Transformation",
+    "registration": {
+      "required": true,
+      "deadline": "2025-05-15",
+      "link": "https://digital-transformation.de/konferenz",
+      "fee": "Fr\u00fchbucher: 899 \u20ac, Regul\u00e4r: 1.199 \u20ac",
+      "capacity": 300
+    },
+    "tags": [
+      "digitalisierung",
+      "transformation",
+      "f\u00fchrungskr\u00e4fte"
+    ]
+  }
+}

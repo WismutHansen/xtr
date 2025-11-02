@@ -7,7 +7,7 @@ use anyhow::Context;
 use anyhow::Result;
 use serde::Deserialize;
 
-/// Representation of a single training example loaded from a `.toml` file.
+/// Representation of a single training example loaded from a `.json` file.
 #[derive(Debug, Clone)]
 pub struct TaskExample {
     pub name: String,
@@ -49,7 +49,7 @@ impl TaskExample {
 #[derive(Debug, Deserialize)]
 struct RawTaskExample {
     input_text: String,
-    expected_json: String,
+    expected_json: serde_json::Value,
     #[serde(default)]
     additional_context: Option<String>,
     #[serde(default)]
@@ -70,7 +70,7 @@ pub fn load_task_examples(dir: &Path) -> Result<Vec<TaskExample>> {
     {
         let entry = entry?;
         let path = entry.path();
-        if path.extension().and_then(|ext| ext.to_str()) != Some("toml") {
+        if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
             continue;
         }
 
@@ -79,19 +79,11 @@ pub fn load_task_examples(dir: &Path) -> Result<Vec<TaskExample>> {
 
         let RawTaskExample {
             input_text,
-            expected_json: expected_raw,
+            expected_json,
             additional_context,
             images,
-        } = toml::from_str(&content)
-            .with_context(|| format!("failed to parse example toml '{}'", path.display()))?;
-
-        let expected_json: serde_json::Value =
-            serde_json::from_str(&expected_raw).with_context(|| {
-                format!(
-                    "failed to parse expected_json as JSON in example '{}'",
-                    path.display()
-                )
-            })?;
+        } = serde_json::from_str(&content)
+            .with_context(|| format!("failed to parse example json '{}'", path.display()))?;
 
         let mut image_paths = Vec::with_capacity(images.len());
         for relative in &images {

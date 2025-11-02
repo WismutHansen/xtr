@@ -1,0 +1,73 @@
+{
+  "input_text": "Contact Information Form\n\nFirst Name: Jennifer\nMiddle Initial: L\nLast Name: Rodriguez\nTitle: Dr.\n\nPosition: Director of Research\nCompany: BioTech Innovations\nDepartment: Clinical Trials\n\nPrimary Email: jrodriguez@biotech-innovations.com\nSecondary Email: jenny.rodriguez@university.edu\n\nMobile Phone: 555-345-6789\nWork Phone: 555-987-6543 (extension 205)\nHome Phone: 555-456-7890\n\nWork Address:\n789 Research Park Drive\nBuilding C, Floor 3\nBoston, MA 02115\nUnited States\n\nMailing Address:\nSame as work address\n\nWebsite: www.biotechinnovations.com/team/jrodriguez\nLinkedIn: www.linkedin.com/in/jennifer-rodriguez-phd\nTwitter: @DrJenRodriguez\n\nTime Zone: Eastern (ET)\nPreferred Contact Method: Email\nLanguages Spoken: English, Spanish\n\nAssistant Information:\nName: Patricia Kim\nEmail: pkim@biotech-innovations.com\nPhone: 555-987-6543 ext. 201\n",
+  "expected_json": {
+    "name": {
+      "full_name": "Dr. Jennifer L Rodriguez",
+      "first_name": "Jennifer",
+      "middle_name": "L",
+      "last_name": "Rodriguez",
+      "prefix": "Dr."
+    },
+    "job_title": "Director of Research",
+    "company": {
+      "name": "BioTech Innovations",
+      "department": "Clinical Trials"
+    },
+    "email_addresses": [
+      {
+        "email": "jrodriguez@biotech-innovations.com",
+        "type": "work",
+        "primary": true
+      },
+      {
+        "email": "jenny.rodriguez@university.edu",
+        "type": "other"
+      }
+    ],
+    "phone_numbers": [
+      {
+        "number": "555-345-6789",
+        "type": "mobile",
+        "primary": true
+      },
+      {
+        "number": "555-987-6543",
+        "type": "work",
+        "extension": "205"
+      },
+      {
+        "number": "555-456-7890",
+        "type": "home"
+      }
+    ],
+    "addresses": [
+      {
+        "type": "work",
+        "street": "789 Research Park Drive, Building C, Floor 3",
+        "city": "Boston",
+        "state": "MA",
+        "postal_code": "02115",
+        "country": "United States",
+        "full_address": "789 Research Park Drive, Building C, Floor 3, Boston, MA 02115, United States"
+      }
+    ],
+    "websites": [
+      {
+        "url": "www.biotechinnovations.com/team/jrodriguez",
+        "type": "company"
+      }
+    ],
+    "social_media": {
+      "linkedin": "www.linkedin.com/in/jennifer-rodriguez-phd",
+      "twitter": "@DrJenRodriguez"
+    },
+    "preferred_contact_method": "email",
+    "timezone": "ET",
+    "language": "English",
+    "assistant": {
+      "name": "Patricia Kim",
+      "email": "pkim@biotech-innovations.com",
+      "phone": "555-987-6543 ext. 201"
+    }
+  }
+}

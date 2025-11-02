@@ -1,0 +1,61 @@
+{
+  "input_text": "Hans M\u00fcller\nSenior Consultant | Beratung & Consulting GmbH\nFrankfurt am Main, Deutschland\n\nMobil: +49 170 1234567\nFestnetz: +49 69 9876543\nFax: +49 69 9876544\nE-Mail: h.mueller@beratung-consulting.de\nAlternative E-Mail: hans.mueller@gmail.com\n\nGesch\u00e4ftsadresse:\nZeil 123\n60313 Frankfurt am Main\nGermany\n\nXING: xing.com/profile/Hans_Mueller\nLinkedIn: linkedin.com/in/hansmueller-de\n\nVerf\u00fcgbare Zeiten: Mo-Fr, 8-18 Uhr (MEZ)\nSprachen: Deutsch (Muttersprache), Englisch (Flie\u00dfend)\n",
+  "expected_json": {
+    "name": {
+      "full_name": "Hans M\u00fcller",
+      "first_name": "Hans",
+      "last_name": "M\u00fcller"
+    },
+    "job_title": "Senior Consultant",
+    "company": {
+      "name": "Beratung & Consulting GmbH"
+    },
+    "email_addresses": [
+      {
+        "email": "h.mueller@beratung-consulting.de",
+        "type": "work",
+        "primary": true
+      },
+      {
+        "email": "hans.mueller@gmail.com",
+        "type": "personal"
+      }
+    ],
+    "phone_numbers": [
+      {
+        "number": "+49 170 1234567",
+        "type": "mobile",
+        "primary": true
+      },
+      {
+        "number": "+49 69 9876543",
+        "type": "work"
+      },
+      {
+        "number": "+49 69 9876544",
+        "type": "fax"
+      }
+    ],
+    "addresses": [
+      {
+        "type": "work",
+        "street": "Zeil 123",
+        "city": "Frankfurt am Main",
+        "postal_code": "60313",
+        "country": "Germany",
+        "full_address": "Zeil 123, 60313 Frankfurt am Main, Germany"
+      }
+    ],
+    "social_media": {
+      "linkedin": "linkedin.com/in/hansmueller-de",
+      "other": [
+        {
+          "platform": "XING",
+          "handle": "xing.com/profile/Hans_Mueller"
+        }
+      ]
+    },
+    "timezone": "MEZ",
+    "language": "Deutsch"
+  }
+}

@@ -172,6 +172,7 @@ pub struct AppConfig {
     pub storage: StorageSettings,
     pub optimization: OptimizationSection,
     pub mlflow: MlflowSettings,
+    pub metrics: MetricsConfig,
 }
 
 impl AppConfig {
@@ -250,6 +251,45 @@ impl Default for MlflowSettings {
             experiment_name: Some("xtr-optimization".to_string()),
             local_logging: true,
             log_dir: None,
+        }
+    }
+}
+
+/// Configuration for evaluation metrics used during optimization.
+/// These settings control how extraction quality is scored.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct MetricsConfig {
+    /// Weight for penalizing extra/hallucinated fields (0.0-1.0)
+    /// Lower values = lighter penalty for hallucinations
+    pub extra_field_weight: f32,
+    
+    /// Beta parameter for F-beta score (balances precision vs recall)
+    /// Values > 1.0 favor recall, < 1.0 favor precision
+    pub beta: f32,
+    
+    /// Base score awarded for valid JSON parsing
+    pub base_parse_score: f32,
+    
+    /// Additional score awarded for schema validation
+    pub base_schema_score: f32,
+    
+    /// Weight for field-level quality score (precision/recall)
+    pub field_weight: f32,
+    
+    /// Weight for coverage bonus (encourages completeness)
+    pub coverage_weight: f32,
+}
+
+impl Default for MetricsConfig {
+    fn default() -> Self {
+        Self {
+            extra_field_weight: 0.5,
+            beta: 1.5,
+            base_parse_score: 0.2,
+            base_schema_score: 0.2,
+            field_weight: 0.5,
+            coverage_weight: 0.1,
         }
     }
 }

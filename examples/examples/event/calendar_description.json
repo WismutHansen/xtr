@@ -1,0 +1,65 @@
+{
+  "input_text": "Board of Directors Meeting - Q1 Review\n\nMarch 25, 2025 | 10:00 AM - 2:00 PM EST\nExecutive Conference Room, 42nd Floor\nMicrosoft Teams: https://teams.microsoft.com/l/meetup-join/19%3ameeting_NzExYjk\n\nRequired: All board members, Richard Thompson (CEO), Patricia O'Neill (CFO), James Williams (COO)\n\nAgenda:\n10:00 - Opening remarks\n10:15 - Financial review (Patricia O'Neill)\n11:00 - Strategic initiatives (James Williams)\n12:00 - Working lunch\n12:45 - Risk assessment (Audit Committee)\n1:30 - Executive session\n\nContact: Karen Stevens (k.stevens@company.com)\n",
+  "expected_json": {
+    "event_name": "Board of Directors Meeting - Q1 Review",
+    "event_type": "meeting",
+    "date_time": {
+      "start_date": "2025-03-25",
+      "start_time": "10:00 AM",
+      "end_time": "2:00 PM",
+      "timezone": "EST",
+      "all_day": false
+    },
+    "location": {
+      "type": "hybrid",
+      "room": "Executive Conference Room, 42nd Floor",
+      "virtual_link": "https://teams.microsoft.com/l/meetup-join/19%3ameeting_NzExYjk"
+    },
+    "attendees": [
+      {
+        "name": "Richard Thompson",
+        "role": "CEO",
+        "required": true
+      },
+      {
+        "name": "Patricia O'Neill",
+        "role": "CFO",
+        "required": true
+      },
+      {
+        "name": "James Williams",
+        "role": "COO",
+        "required": true
+      }
+    ],
+    "agenda": [
+      {
+        "time": "10:00 AM",
+        "topic": "Opening remarks"
+      },
+      {
+        "time": "10:15 AM",
+        "topic": "Financial review",
+        "speaker": "Patricia O'Neill"
+      },
+      {
+        "time": "11:00 AM",
+        "topic": "Strategic initiatives",
+        "speaker": "James Williams"
+      },
+      {
+        "time": "12:00 PM",
+        "topic": "Working lunch"
+      },
+      {
+        "time": "12:45 PM",
+        "topic": "Risk assessment",
+        "speaker": "Audit Committee"
+      },
+      {
+        "time": "1:30 PM",
+        "topic": "Executive session"
+      }
+    ]
+  }
+}

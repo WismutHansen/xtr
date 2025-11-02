@@ -24,13 +24,7 @@
     "organization": "Fraunhofer-Institut für Entwurfstechnik Mechatronik IEM"
   },
   "description": "A live podcast event featuring a journey through the history and future of computing technologies. The session includes a thought experiment, live recording with audience participation, Q&A, networking, and a sneak peek of the next episode. The event is free and hosted by Fraunhofer IEM in Paderborn.",
-  "tags": [
-    "podcast",
-    "future",
-    "technology",
-    "science",
-    "outatime"
-  ],
+  "tags": ["podcast", "future", "technology", "science", "outatime"],
   "special_instructions": "Free entry. Limited seating available. Bring your podcast app to listen and subscribe.",
   "attendees": [],
   "agenda": []

@@ -1,0 +1,75 @@
+{
+  "input_text": "MEETING INVITATION\n\nSubject: Q1 Planning Team Meeting\n\nWednesday, January 15, 2025\n10:00 AM - 11:30 AM EST\nMain Office, Conference Room B\nZoom: https://zoom.us/j/123456789 (ID: 123 456 789)\n\nQuarterly planning to review Q4 and set Q1 priorities.\n\nAGENDA:\n10:00 - Q4 Retrospective (Sarah Johnson)\n10:15 - Q1 Goals and Priorities (Michael Chen) - 30 min\n10:45 - Resource Allocation (Lisa Martinez) - 30 min\n11:15 - Q&A and Action Items - 15 min\n\nRequired:\n- Michael Chen (m.chen@company.com)\n- Lisa Martinez (l.martinez@company.com)\n\nRSVP by January 13th\n\nPre-read: Review Q4 report\n\nSarah Johnson, Product Team Lead\nsarah.johnson@company.com\n",
+  "expected_json": {
+    "event_name": "Q1 Planning Team Meeting",
+    "event_type": "meeting",
+    "date_time": {
+      "start_date": "2025-01-15",
+      "start_time": "10:00 AM",
+      "end_time": "11:30 AM",
+      "timezone": "EST",
+      "all_day": false
+    },
+    "location": {
+      "type": "hybrid",
+      "venue_name": "Main Office",
+      "room": "Conference Room B",
+      "virtual_link": "https://zoom.us/j/123456789",
+      "meeting_id": "123 456 789"
+    },
+    "organizer": {
+      "name": "Sarah Johnson",
+      "email": "sarah.johnson@company.com",
+      "organization": "Product Team"
+    },
+    "attendees": [
+      {
+        "name": "Michael Chen",
+        "email": "m.chen@company.com",
+        "role": "speaker",
+        "required": true
+      },
+      {
+        "name": "Lisa Martinez",
+        "email": "l.martinez@company.com",
+        "role": "speaker",
+        "required": true
+      }
+    ],
+    "description": "Quarterly planning to review Q4 and set Q1 priorities",
+    "agenda": [
+      {
+        "time": "10:00 AM",
+        "topic": "Q4 Retrospective",
+        "speaker": "Sarah Johnson"
+      },
+      {
+        "time": "10:15 AM",
+        "topic": "Q1 Goals and Priorities",
+        "speaker": "Michael Chen",
+        "duration": "30 min"
+      },
+      {
+        "time": "10:45 AM",
+        "topic": "Resource Allocation",
+        "speaker": "Lisa Martinez",
+        "duration": "30 min"
+      },
+      {
+        "time": "11:15 AM",
+        "topic": "Q&A and Action Items",
+        "duration": "15 min"
+      }
+    ],
+    "rsvp": {
+      "required": true,
+      "deadline": "2025-01-13",
+      "contact": "sarah.johnson@company.com"
+    },
+    "tags": [
+      "planning",
+      "quarterly"
+    ],
+    "special_instructions": "Review Q4 report before the meeting"
+  }
+}

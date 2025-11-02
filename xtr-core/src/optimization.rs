@@ -21,6 +21,7 @@ use jsonschema::JSONSchema;
 use serde_json::Value;
 
 use crate::config::AppPaths;
+use crate::config::MetricsConfig;
 use crate::config::ResolvedOptimizationSettings;
 use crate::config::ResolvedTaskConfig;
 use crate::examples::load_task_examples;
@@ -51,6 +52,9 @@ pub struct ExtractionProgram {
 
     #[builder(default = false)]
     verbose: bool,
+
+    #[builder(default = MetricsConfig::default())]
+    metrics_config: MetricsConfig,
 }
 
 impl Default for ExtractionProgram {
@@ -70,6 +74,13 @@ impl ExtractionProgram {
         Self::builder()
             .solver(Predict::new(ExtractionSignature::new()))
             .verbose(verbose)
+            .build()
+    }
+
+    pub fn with_metrics_config(metrics_config: MetricsConfig) -> Self {
+        Self::builder()
+            .solver(Predict::new(ExtractionSignature::new()))
+            .metrics_config(metrics_config)
             .build()
     }
 
@@ -110,6 +121,22 @@ impl Module for ExtractionProgram {
 
         Ok(prediction)
     }
+}
+
+/// Calculate F-beta score combining precision and recall.
+/// Beta > 1 favors recall, beta < 1 favors precision.
+fn f_beta(precision: f32, recall: f32, beta: f32) -> f32 {
+    if precision <= 0.0 && recall <= 0.0 {
+        return 0.0;
+    }
+
+    let beta_sq = beta * beta;
+    let denominator = (beta_sq * precision) + recall;
+    if denominator <= 0.0 {
+        return 0.0;
+    }
+
+    ((1.0 + beta_sq) * precision * recall) / denominator
 }
 
 impl Evaluator for ExtractionProgram {
@@ -233,14 +260,15 @@ impl FeedbackEvaluator for ExtractionProgram {
             }
         };
 
+        let config = &self.metrics_config;
         let mut score: f32 = 0.0;
         let mut feedback_lines = Vec::new();
 
-        // Step 1: Valid JSON (+0.2)
-        score += 0.2;
+        // Step 1: Valid JSON
+        score += config.base_parse_score;
         feedback_lines.push("✅ Valid JSON".to_string());
 
-        // Step 2: Schema validation (+0.2)
+        // Step 2: Schema validation
         let compiled = match JSONSchema::compile(&schema_json) {
             Ok(schema) => schema,
             Err(err) => {
@@ -261,7 +289,7 @@ impl FeedbackEvaluator for ExtractionProgram {
             return FeedbackMetric::new(score * 0.5, feedback_lines.join("\n"));
         }
 
-        score += 0.2;
+        score += config.base_schema_score;
         feedback_lines.push("✅ Passes schema validation".to_string());
 
         // Step 3: Exact match check
@@ -303,9 +331,10 @@ impl FeedbackEvaluator for ExtractionProgram {
             return FeedbackMetric::new(score, feedback_lines.join("\n"));
         }
 
-        // Calculate precision: correct / (correct + wrong + extra)
-        let precision = if correct + wrong + extra > 0 {
-            correct as f32 / (correct + wrong + extra) as f32
+        // Calculate precision: correct / (correct + wrong + weighted_extra)
+        let denom = correct + wrong + ((config.extra_field_weight * extra as f32) as usize);
+        let precision = if denom > 0 {
+            correct as f32 / denom as f32
         } else {
             0.0
         };
@@ -313,11 +342,13 @@ impl FeedbackEvaluator for ExtractionProgram {
         // Calculate recall: correct / expected
         let recall = correct as f32 / expected_fields.len() as f32;
 
-        // Weighted field score (precision 70%, recall 30%)
-        let field_score = (0.7 * precision) + (0.3 * recall);
+        // Use F-beta score to combine precision and recall
+        let field_quality = f_beta(precision, recall, config.beta);
+        let coverage_bonus = recall;
 
-        // Final score: base (0.4) + weighted field score (0.6)
-        score += 0.6 * field_score;
+        // Final score: base + field quality + coverage bonus
+        score += (config.field_weight * field_quality) + (config.coverage_weight * coverage_bonus);
+        score = score.min(1.0);
 
         // Feedback
         feedback_lines.push(format!(
@@ -356,6 +387,7 @@ pub struct GepaRunner {
     pub task: ResolvedTaskConfig,
     pub optimization: ResolvedOptimizationSettings,
     pub models: TaskModelHandles,
+    pub metrics_config: MetricsConfig,
     #[cfg(feature = "mlflow")]
     pub mlflow_tracking_uri: Option<String>,
     #[cfg(feature = "mlflow")]
@@ -370,6 +402,7 @@ impl GepaRunner {
             task,
             optimization,
             models,
+            metrics_config,
             #[cfg(feature = "mlflow")]
             mlflow_tracking_uri,
             #[cfg(feature = "mlflow")]
@@ -427,7 +460,7 @@ impl GepaRunner {
 
         models.student.configure_global();
 
-        let mut program = ExtractionProgram::new();
+        let mut program = ExtractionProgram::with_metrics_config(metrics_config);
         if let Some(description) = &task.description {
             let base = OptimizableTrait::get_signature(&program.solver).instruction();
             let combined = if base.trim().is_empty() {

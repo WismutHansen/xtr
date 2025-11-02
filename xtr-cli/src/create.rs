@@ -1,4 +1,5 @@
-use anyhow::{Context, Result};
+use anyhow::Context;
+use anyhow::Result;
 use json_schema_generator::generate_json_schema;
 use std::fs;
 use std::path::Path;

@@ -1,0 +1,62 @@
+{
+  "input_text": "TECH CAREER FAIR 2025\nConnect with Top Technology Employers!\n\n\ud83d\udcc5 Saturday, May 10, 2025 | 10:00 AM - 4:00 PM\n\ud83d\udccd City Convention Center, Hall A & B\n   123 Convention Way, Austin, TX 78701\n\nFEATURED COMPANIES:\nGoogle \u2022 Microsoft \u2022 Amazon \u2022 Apple \u2022 Tesla \u2022 Meta \u2022 IBM \u2022 Oracle \u2022 + 50 more!\n\nSCHEDULE:\n10:00 AM - Doors Open & Registration\n10:30 AM - Welcome Presentation (Main Stage)\n11:00 AM - Company Booths Open / Resume Reviews\n12:30 PM - Panel: \"Breaking Into Tech\" (Room 201)\n2:00 PM - Workshop: \"Ace Your Technical Interview\" (Room 202)\n3:30 PM - Raffle Drawing (Main Stage)\n\nREGISTRATION: FREE but required\nSign up at: www.techcareerfair.com/register\nEarly bird deadline: April 25th (free t-shirt!)\n\nParking: Convention Center Garage ($10 all-day)\n\nQUESTIONS?\nEmail: info@techcareerfair.com\nCall: (512) 555-JOBS\n\nOrganized by Austin Tech Alliance & Career Services\n",
+  "expected_json": {
+    "event_name": "Tech Career Fair 2025",
+    "event_type": "networking",
+    "date_time": {
+      "start_date": "2025-05-10",
+      "start_time": "10:00 AM",
+      "end_time": "4:00 PM",
+      "all_day": false
+    },
+    "location": {
+      "type": "physical",
+      "venue_name": "City Convention Center",
+      "address": "123 Convention Way, Austin, TX 78701",
+      "room": "Hall A & B"
+    },
+    "organizer": {
+      "name": "Austin Tech Alliance & Career Services",
+      "email": "info@techcareerfair.com",
+      "phone": "(512) 555-JOBS"
+    },
+    "description": "Career fair connecting job seekers with top technology employers including Google, Microsoft, Amazon, Apple, Tesla, Meta, IBM, Oracle, and 50+ more companies",
+    "agenda": [
+      {
+        "time": "10:00 AM",
+        "topic": "Doors Open & Registration"
+      },
+      {
+        "time": "10:30 AM",
+        "topic": "Welcome Presentation"
+      },
+      {
+        "time": "11:00 AM",
+        "topic": "Company Booths Open / Resume Reviews"
+      },
+      {
+        "time": "12:30 PM",
+        "topic": "Breaking Into Tech"
+      },
+      {
+        "time": "2:00 PM",
+        "topic": "Ace Your Technical Interview"
+      },
+      {
+        "time": "3:30 PM",
+        "topic": "Raffle Drawing"
+      }
+    ],
+    "registration": {
+      "required": true,
+      "deadline": "2025-04-25",
+      "link": "www.techcareerfair.com/register",
+      "fee": "Free"
+    },
+    "tags": [
+      "career",
+      "technology",
+      "networking"
+    ]
+  }
+}

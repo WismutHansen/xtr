@@ -1,0 +1,36 @@
+{
+  "input_text": "STARTUP NETWORKING NIGHT BERLIN\n\nDonnerstag, 15. Mai 2025\n18:00 - 22:00 Uhr\n\nFactory Berlin Mitte\nRheinsberger Stra\u00dfe 76/77, 10115 Berlin\n\nVernetze dich mit Gr\u00fcndern, Investoren und Tech-Enthusiasten!\n\nEintritt: 20 \u20ac (inkl. Getr\u00e4nke und Snacks)\nBegrenzt auf 80 Teilnehmer\n\nAnmeldung erforderlich bis 12. Mai: https://startup-berlin.de/networking\n\nDresscode: Smart Casual\nVisitenkarten mitbringen empfohlen\n\nVeranstaltet von Berlin Startup Association\nKontakt: events@startup-berlin.de\n",
+  "expected_json": {
+    "event_name": "Startup Networking Night Berlin",
+    "event_type": "networking",
+    "date_time": {
+      "start_date": "2025-05-15",
+      "start_time": "6:00 PM",
+      "end_time": "10:00 PM",
+      "all_day": false
+    },
+    "location": {
+      "type": "physical",
+      "venue_name": "Factory Berlin Mitte",
+      "address": "Rheinsberger Stra\u00dfe 76/77, 10115 Berlin"
+    },
+    "organizer": {
+      "name": "Berlin Startup Association",
+      "email": "events@startup-berlin.de"
+    },
+    "description": "Vernetze dich mit Gr\u00fcndern, Investoren und Tech-Enthusiasten",
+    "registration": {
+      "required": true,
+      "deadline": "2025-05-12",
+      "link": "https://startup-berlin.de/networking",
+      "fee": "20 \u20ac",
+      "capacity": 80
+    },
+    "tags": [
+      "networking",
+      "startup",
+      "berlin"
+    ],
+    "special_instructions": "Smart Casual Dresscode. Visitenkarten mitbringen empfohlen. Eintritt inkl. Getr\u00e4nke und Snacks."
+  }
+}
