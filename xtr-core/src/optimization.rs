@@ -266,7 +266,7 @@ impl FeedbackEvaluator for ExtractionProgram {
 
         // Step 1: Valid JSON
         score += config.base_parse_score;
-        feedback_lines.push("✅ Valid JSON".to_string());
+        feedback_lines.push("󰸞 Valid JSON".to_string());
 
         // Step 2: Schema validation
         let compiled = match JSONSchema::compile(&schema_json) {
@@ -282,7 +282,7 @@ impl FeedbackEvaluator for ExtractionProgram {
         };
 
         if let Err(errors) = compiled.validate(&predicted_json) {
-            feedback_lines.push("❌ Schema validation failed:".to_string());
+            feedback_lines.push(" Schema validation failed:".to_string());
             for error in errors.take(5) {
                 feedback_lines.push(format!("  - {error}"));
             }
@@ -290,11 +290,11 @@ impl FeedbackEvaluator for ExtractionProgram {
         }
 
         score += config.base_schema_score;
-        feedback_lines.push("✅ Passes schema validation".to_string());
+        feedback_lines.push("󰸞 Passes schema validation".to_string());
 
         // Step 3: Exact match check
         if predicted_json == expected_json {
-            return FeedbackMetric::new(1.0, "✅ Exact match!".to_string());
+            return FeedbackMetric::new(1.0, "󰸞 Exact match!".to_string());
         }
 
         // Step 4: Field-level precision/recall
@@ -327,7 +327,7 @@ impl FeedbackEvaluator for ExtractionProgram {
             .count();
 
         if predicted_fields.is_empty() {
-            feedback_lines.push("❌ No fields extracted".to_string());
+            feedback_lines.push(" No fields extracted".to_string());
             return FeedbackMetric::new(score, feedback_lines.join("\n"));
         }
 
@@ -361,12 +361,12 @@ impl FeedbackEvaluator for ExtractionProgram {
 
         if wrong > 0 {
             feedback_lines.push(format!(
-                "⚠️  {wrong} incorrect field(s) - verify extraction logic"
+                "  {wrong} incorrect field(s) - verify extraction logic"
             ));
         }
         if extra > 0 {
             feedback_lines.push(format!(
-                "⚠️  {extra} hallucinated field(s) - avoid adding unsupported fields"
+                "  {extra} hallucinated field(s) - avoid adding unsupported fields"
             ));
         }
 
