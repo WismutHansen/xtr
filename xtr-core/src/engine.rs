@@ -18,6 +18,7 @@ use crate::config::ResolvedTaskConfig;
 use crate::config::load_or_initialize_config;
 use crate::lm::ModelHandle;
 use crate::lm::TaskModelHandles;
+use crate::lm::{disable_verbose_llm_logging, enable_verbose_llm_logging};
 use crate::optimization::ExtractionProgram;
 use crate::optimization::GepaOutcome;
 use crate::optimization::GepaRunner;
@@ -53,14 +54,41 @@ impl ExtractionEngine {
     /// Load configuration from disk (creating defaults if needed) and produce a
     /// ready-to-use engine instance.
     pub fn load(app_name: impl AsRef<str>) -> Result<Self> {
-        Ok(Self {
-            bundle: load_or_initialize_config(app_name)?,
-        })
+        let bundle = load_or_initialize_config(app_name)?;
+
+        // Enable/disable verbose LLM logging based on config
+        if bundle.config.logging.verbose_llm_logging {
+            let log_dir = Self::resolve_llm_log_dir(&bundle)?;
+            enable_verbose_llm_logging(log_dir);
+        } else {
+            disable_verbose_llm_logging();
+        }
+
+        Ok(Self { bundle })
     }
 
     /// Construct an engine from an existing [`ConfigBundle`]. Useful for tests.
     pub fn from_bundle(bundle: ConfigBundle) -> Self {
+        // Enable/disable verbose LLM logging based on config
+        if bundle.config.logging.verbose_llm_logging {
+            if let Ok(log_dir) = Self::resolve_llm_log_dir(&bundle) {
+                enable_verbose_llm_logging(log_dir);
+            }
+        } else {
+            disable_verbose_llm_logging();
+        }
+
         Self { bundle }
+    }
+
+    fn resolve_llm_log_dir(bundle: &ConfigBundle) -> Result<std::path::PathBuf> {
+        use crate::config::resolve_path_value;
+
+        if let Some(custom_dir) = bundle.config.logging.llm_log_dir.as_ref() {
+            resolve_path_value(custom_dir, &bundle.paths.config_dir)
+        } else {
+            Ok(bundle.paths.state_dir.join("llm_logs"))
+        }
     }
 
     pub fn config(&self) -> &AppConfig {

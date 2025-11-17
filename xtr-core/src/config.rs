@@ -174,6 +174,7 @@ pub struct AppConfig {
     pub optimization: OptimizationSection,
     pub mlflow: MlflowSettings,
     pub metrics: MetricsConfig,
+    pub logging: LoggingSettings,
 }
 
 impl AppConfig {
@@ -304,6 +305,15 @@ pub struct MetricsConfig {
     pub coverage_weight: f32,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct LoggingSettings {
+    /// Enable verbose logging of complete request-response cycle with the LLM
+    pub verbose_llm_logging: bool,
+    /// Directory where LLM request-response logs will be written (as JSON files)
+    pub llm_log_dir: Option<String>,
+}
+
 impl Default for MetricsConfig {
     fn default() -> Self {
         Self {
@@ -313,6 +323,15 @@ impl Default for MetricsConfig {
             base_schema_score: 0.2,
             field_weight: 0.5,
             coverage_weight: 0.1,
+        }
+    }
+}
+
+impl Default for LoggingSettings {
+    fn default() -> Self {
+        Self {
+            verbose_llm_logging: false,
+            llm_log_dir: None,
         }
     }
 }
@@ -697,7 +716,7 @@ fn xdg_dir(var: &str, home: &Path, fallback_suffix: &str) -> PathBuf {
         .unwrap_or_else(|| home.join(fallback_suffix))
 }
 
-fn resolve_path_value(value: &str, base_dir: &Path) -> Result<PathBuf> {
+pub fn resolve_path_value(value: &str, base_dir: &Path) -> Result<PathBuf> {
     let expanded = expand_path(value)?;
     let mut path = PathBuf::from(&expanded);
     if path.is_absolute() {

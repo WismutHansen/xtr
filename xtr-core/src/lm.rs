@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::Arc;
+use std::sync::Mutex;
 
 use anyhow::Context;
 use anyhow::Result;
@@ -16,10 +18,125 @@ use dspy_rs::Prediction;
 use dspy_rs::adapter::Adapter;
 use dspy_rs::serde_utils::get_iter_from_value;
 use rig::tool::ToolDyn;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::config::ModelDescriptor;
 use crate::config::ResolvedModelConfig;
+
+/// Global state for verbose LLM logging
+static VERBOSE_LLM_LOGGING: Mutex<Option<PathBuf>> = Mutex::new(None);
+
+/// Enable verbose LLM logging to the specified directory
+pub fn enable_verbose_llm_logging(log_dir: PathBuf) {
+    if let Ok(mut guard) = VERBOSE_LLM_LOGGING.lock() {
+        *guard = Some(log_dir);
+    }
+}
+
+/// Disable verbose LLM logging
+pub fn disable_verbose_llm_logging() {
+    if let Ok(mut guard) = VERBOSE_LLM_LOGGING.lock() {
+        *guard = None;
+    }
+}
+
+/// Get the LLM log directory if logging is enabled
+fn get_llm_log_dir() -> Option<PathBuf> {
+    VERBOSE_LLM_LOGGING.lock().ok()?.clone()
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct LlmLogEntry {
+    timestamp: String,
+    model: String,
+    request: LlmRequest,
+    response: LlmResponse,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct LlmRequest {
+    messages: Value,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct LlmResponse {
+    content: String,
+    usage: Option<LlmUsageInfo>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct LlmUsageInfo {
+    total_tokens: u64,
+    prompt_tokens: Option<u64>,
+    completion_tokens: Option<u64>,
+}
+
+fn log_llm_interaction(
+    model: &str,
+    messages: &Chat,
+    response_content: &str,
+    usage: &dspy_rs::LmUsage,
+) {
+    if let Some(log_dir) = get_llm_log_dir() {
+        if let Err(err) =
+            try_log_llm_interaction(model, messages, response_content, usage, &log_dir)
+        {
+            eprintln!("Warning: failed to write LLM log: {err}");
+        }
+    }
+}
+
+fn try_log_llm_interaction(
+    model: &str,
+    messages: &Chat,
+    response_content: &str,
+    usage: &dspy_rs::LmUsage,
+    log_dir: &PathBuf,
+) -> Result<()> {
+    use std::fs;
+    use std::time::SystemTime;
+
+    // Ensure log directory exists
+    fs::create_dir_all(log_dir)
+        .with_context(|| format!("failed to create LLM log directory {}", log_dir.display()))?;
+
+    // Convert Chat to JSON value for the request
+    let request_json = messages.to_json();
+
+    let log_entry = LlmLogEntry {
+        timestamp: chrono::Utc::now().to_rfc3339(),
+        model: model.to_string(),
+        request: LlmRequest {
+            messages: request_json,
+        },
+        response: LlmResponse {
+            content: response_content.to_string(),
+            usage: Some(LlmUsageInfo {
+                total_tokens: usage.total_tokens,
+                prompt_tokens: Some(usage.prompt_tokens),
+                completion_tokens: Some(usage.completion_tokens),
+            }),
+        },
+    };
+
+    // Generate filename with timestamp and random suffix
+    let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S").to_string();
+    let millis = SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.subsec_millis())
+        .unwrap_or(0);
+    let filename = format!("{timestamp}_llm_{millis:03}.json");
+    let file_path = log_dir.join(filename);
+
+    // Write JSON log
+    let json =
+        serde_json::to_string_pretty(&log_entry).context("failed to serialize LLM log entry")?;
+    fs::write(&file_path, json)
+        .with_context(|| format!("failed to write LLM log to {}", file_path.display()))?;
+
+    Ok(())
+}
 
 #[derive(Default, Clone)]
 struct JsonAdapter;
@@ -254,8 +371,16 @@ impl Adapter for JsonAdapter {
         }
 
         let messages = self.format(signature, inputs.clone());
-        let response = lm.call(messages, vec![]).await?;
+        let response = lm.call(messages.clone(), vec![]).await?;
         let prompt_str = response.chat.to_json().to_string();
+
+        // Log the complete request-response cycle if verbose logging is enabled
+        log_llm_interaction(
+            &lm.model,
+            &messages,
+            &response.output.content(),
+            &response.usage,
+        );
 
         let data = self.parse_response(signature, response.output.clone());
         let prediction = Prediction {

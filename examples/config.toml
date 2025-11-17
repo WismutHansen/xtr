@@ -3,6 +3,15 @@
 # to customize defaults. Values support environment variable expansion like
 # $XDG_CONFIG_HOME and home expansion via ~.
 
+[logging]
+# Enable verbose logging of complete request-response cycle with the LLM (default: false)
+# When enabled, all LLM requests and responses will be logged to JSON files
+verbose_llm_logging = false
+
+# Directory where LLM request-response logs will be written as JSON files
+# Defaults to $XDG_STATE_HOME/xtr/llm_logs if not specified
+# llm_log_dir = "~/.local/state/xtr/llm_logs"
+
 [metrics]
 # Configuration for evaluation metrics used during optimization.
 # These control how extraction quality is scored.
