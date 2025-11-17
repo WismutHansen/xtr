@@ -1,6 +1,6 @@
 [package]
 name = "xtr-api"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "HTTP API server for XTR - structured data extraction service"
 license = "MIT"
