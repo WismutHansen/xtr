@@ -948,9 +948,9 @@ checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
 
 [[package]]
 name = "dspy-rs"
-version = "0.7.1"
+version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a576134315d8fcf92c8919d1596775a133c4bfbdebb4cfcac07e19f990a2e38c"
+checksum = "969a8d429908d989e1f8229d3965a96c28a132870f2d7b336fcb60a20beb3623"
 dependencies = [
  "anyhow",
  "arrow",
@@ -980,9 +980,9 @@ dependencies = [
 
 [[package]]
 name = "dsrs_macros"
-version = "0.7.1"
+version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79413c5657bfdfd1df70d2e168543993738a8f469d945a489015476e95c664df"
+checksum = "210ab5a55bd4b091b7929538746d0e2368df327c1322298e48e6e52bac6b20f6"
 dependencies = [
  "anyhow",
  "indexmap 2.11.4",
@@ -1736,7 +1736,7 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
- "socket2 0.6.1",
+ "socket2 0.5.10",
  "system-configuration 0.6.1",
  "tokio",
  "tower-service",
@@ -4307,7 +4307,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -4704,6 +4704,7 @@ dependencies = [
  "jsonschema",
  "mlflow_rs",
  "regex",
+ "rig-core",
  "serde",
  "serde_json",
  "shellexpand",

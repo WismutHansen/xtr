@@ -5,7 +5,10 @@ use dspy_rs::Module;
 use dspy_rs::core::Optimizable as OptimizableTrait;
 use dspy_rs::example;
 use jsonschema::JSONSchema;
+use serde::Serialize;
 use serde_json::Value;
+use std::time::SystemTime;
+use std::time::UNIX_EPOCH;
 
 use crate::config::AppConfig;
 use crate::config::AppPaths;
@@ -306,7 +309,10 @@ impl ExtractionEngine {
             };
 
             match result {
-                Ok(output) => return Ok(output),
+                Ok(output) => {
+                    self.maybe_collect_example(task_name, input_text, &final_context, &output);
+                    return Ok(output);
+                }
                 Err(err) => {
                     errors.push(format!("{label}: {err}"));
                     continue;
@@ -465,6 +471,76 @@ impl ExtractionEngine {
         Ok(())
     }
 
+    fn maybe_collect_example(
+        &self,
+        task_name: &str,
+        input_text: &str,
+        additional_context: &str,
+        output_json: &str,
+    ) {
+        if !self.bundle.config.data_collection.enabled {
+            return;
+        }
+
+        if let Err(err) =
+            self.try_collect_example(task_name, input_text, additional_context, output_json)
+        {
+            eprintln!("Warning: failed to save collected example: {err}");
+        }
+    }
+
+    fn try_collect_example(
+        &self,
+        task_name: &str,
+        input_text: &str,
+        additional_context: &str,
+        output_json: &str,
+    ) -> Result<()> {
+        let Some(mut base_dir) = self
+            .bundle
+            .config
+            .resolved_collection_dir(&self.bundle.paths)?
+        else {
+            return Ok(());
+        };
+
+        let task_component = sanitize_for_filename(task_name);
+        base_dir.push(&task_component);
+        std::fs::create_dir_all(&base_dir).with_context(|| {
+            format!(
+                "failed to create collected examples directory {}",
+                base_dir.display()
+            )
+        })?;
+
+        let parsed_output: serde_json::Value =
+            serde_json::from_str(output_json).context("collected output is not valid JSON")?;
+
+        let record = CollectedExample {
+            input_text,
+            expected_json: parsed_output,
+            additional_context: (!additional_context.trim().is_empty()).then(|| additional_context),
+            images: Vec::new(),
+        };
+
+        let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S").to_string();
+        let millis = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|duration| duration.subsec_millis())
+            .unwrap_or(0);
+        let filename = format!("{timestamp}_{task_component}_{millis:03}.json");
+        let file_path = base_dir.join(filename);
+        let serialized = serde_json::to_string_pretty(&record)?;
+        std::fs::write(&file_path, serialized).with_context(|| {
+            format!(
+                "failed to write collected example to {}",
+                file_path.display()
+            )
+        })?;
+
+        Ok(())
+    }
+
     fn extract_output_json(prediction: &dspy_rs::Prediction) -> Result<String> {
         let raw_value = prediction.get("output_json", None);
 
@@ -538,5 +614,36 @@ impl ExtractionEngine {
             }
             other => make_object_string(other),
         }
+    }
+}
+
+#[derive(Serialize)]
+struct CollectedExample<'a> {
+    input_text: &'a str,
+    expected_json: serde_json::Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    additional_context: Option<&'a str>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    images: Vec<String>,
+}
+
+fn sanitize_for_filename(task_name: &str) -> String {
+    let mut sanitized = String::with_capacity(task_name.len());
+    let mut last_was_sep = false;
+    for ch in task_name.chars() {
+        if ch.is_ascii_alphanumeric() || ch == '-' {
+            sanitized.push(ch);
+            last_was_sep = false;
+        } else if !last_was_sep {
+            sanitized.push('_');
+            last_was_sep = true;
+        }
+    }
+
+    let trimmed = sanitized.trim_matches('_').to_string();
+    if trimmed.is_empty() {
+        "task".to_string()
+    } else {
+        trimmed
     }
 }

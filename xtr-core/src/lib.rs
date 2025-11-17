@@ -1,5 +1,7 @@
 //! Core library for the XTR structured data extraction engine.
 
+extern crate rig;
+
 pub mod config;
 pub mod engine;
 pub mod examples;

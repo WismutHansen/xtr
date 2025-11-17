@@ -128,6 +128,44 @@ curl -s https://example.com | pup '.contact-info text{}' | xtr get contact_detai
 
 3. **Use a model with larger context**: Switch to models supporting 32K+ tokens (e.g., Qwen2.5, Llama 3.1)
 
+## JSON Schemas
+
+This project uses JSON schemas from the [byteowlz/schemas](https://github.com/byteowlz/schemas) repository.
+
+### Syncing Schemas
+
+Pull the latest schemas from the central repository:
+
+```bash
+./scripts/sync-schemas.sh
+```
+
+This will fetch all extraction schemas (contact_details, event, invoice, etc.) to the `examples/schemas/` directory.
+
+### Validating Examples
+
+Ensure all examples match their schemas:
+
+```bash
+./scripts/validate-schemas.sh
+```
+
+### Schemas Used
+
+All extraction schemas from the central repository:
+- `contact_details` - Contact information extraction
+- `event` - Event extraction
+- `contract` - Contract information
+- `customer_feedback` - Customer feedback
+- `email_triage` - Email categorization
+- `invoice` - Invoice data
+- `meeting_notes` - Meeting notes
+- `movie` - Movie information
+- `org` - Organization details
+- `resume` - Resume/CV parsing
+
+See [SCHEMA_REGISTRY.md](https://github.com/byteowlz/schemas/blob/main/SCHEMA_REGISTRY.md) for the complete schema reference.
+
 ## Schema Generation
 
 XTR can automatically generate JSON schemas from example JSON files:
@@ -166,6 +204,18 @@ examples = "$XDG_DATA_HOME/xtr/examples/event"
 description = "Extract event details from the input."
 include_timestamp = true
 ```
+
+## Automatic Example Collection
+
+Enable data collection to capture successful inference calls as ready-to-review JSON examples:
+
+```toml
+[data_collection]
+enabled = true
+output_dir = "$XDG_STATE_HOME/xtr/collected_examples"
+```
+
+When enabled, every `xtr get` run saves the input text, optional additional context, and parsed model output to `collected_examples/<task>/...json` using the same schema as your curated examples. You can move or edit these files before feeding them back into your task's examples directory.
 
 ## Optimization
 

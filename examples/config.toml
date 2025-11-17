@@ -63,6 +63,11 @@ base_url = "http://localhost:8092/v1"
 # state_dir = "~/.local/state/xtr"
 # cache_dir = "$XDG_STATE_HOME/xtr/cache"
 
+[data_collection]
+# Collect inference inputs/outputs as JSON examples (default: false)
+enabled = true
+output_dir = "$XDG_STATE_HOME/xtr/collected_examples"
+
 [mlflow]
 # MLflow experiment tracking (optional). Enable the 'mlflow' feature to use this.
 # tracking_uri = "http://localhost:5000"

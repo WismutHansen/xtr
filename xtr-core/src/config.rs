@@ -170,6 +170,7 @@ pub struct AppConfig {
     pub models: ModelSection,
     pub tasks: HashMap<String, TaskConfig>,
     pub storage: StorageSettings,
+    pub data_collection: DataCollectionSettings,
     pub optimization: OptimizationSection,
     pub mlflow: MlflowSettings,
     pub metrics: MetricsConfig,
@@ -224,6 +225,20 @@ impl AppConfig {
                 .unwrap_or(false),
         })
     }
+
+    pub fn resolved_collection_dir(&self, paths: &AppPaths) -> Result<Option<PathBuf>> {
+        if !self.data_collection.enabled {
+            return Ok(None);
+        }
+
+        let dir = if let Some(custom_dir) = self.data_collection.output_dir.as_ref() {
+            resolve_path_value(custom_dir, &paths.config_dir)?
+        } else {
+            paths.state_dir.join("collected_examples")
+        };
+
+        Ok(Some(dir))
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -233,6 +248,14 @@ pub struct StorageSettings {
     pub data_dir: Option<String>,
     pub state_dir: Option<String>,
     pub cache_dir: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+#[derive(Default)]
+pub struct DataCollectionSettings {
+    pub enabled: bool,
+    pub output_dir: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -263,20 +286,20 @@ pub struct MetricsConfig {
     /// Weight for penalizing extra/hallucinated fields (0.0-1.0)
     /// Lower values = lighter penalty for hallucinations
     pub extra_field_weight: f32,
-    
+
     /// Beta parameter for F-beta score (balances precision vs recall)
     /// Values > 1.0 favor recall, < 1.0 favor precision
     pub beta: f32,
-    
+
     /// Base score awarded for valid JSON parsing
     pub base_parse_score: f32,
-    
+
     /// Additional score awarded for schema validation
     pub base_schema_score: f32,
-    
+
     /// Weight for field-level quality score (precision/recall)
     pub field_weight: f32,
-    
+
     /// Weight for coverage bonus (encourages completeness)
     pub coverage_weight: f32,
 }

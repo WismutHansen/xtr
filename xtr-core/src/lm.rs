@@ -15,6 +15,7 @@ use dspy_rs::MetaSignature;
 use dspy_rs::Prediction;
 use dspy_rs::adapter::Adapter;
 use dspy_rs::serde_utils::get_iter_from_value;
+use rig::tool::ToolDyn;
 use serde_json::Value;
 
 use crate::config::ModelDescriptor;
@@ -241,6 +242,7 @@ impl Adapter for JsonAdapter {
         lm: Arc<LM>,
         signature: &dyn MetaSignature,
         inputs: Example,
+        _tools: Vec<Arc<dyn ToolDyn>>,
     ) -> Result<Prediction> {
         if lm.cache
             && let Some(cache) = lm.cache_handler.as_ref()
@@ -252,7 +254,7 @@ impl Adapter for JsonAdapter {
         }
 
         let messages = self.format(signature, inputs.clone());
-        let response = lm.call(messages).await?;
+        let response = lm.call(messages, vec![]).await?;
         let prompt_str = response.chat.to_json().to_string();
 
         let data = self.parse_response(signature, response.output.clone());
