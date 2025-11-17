@@ -2,6 +2,12 @@
 name = "xtr-cli"
 version = "0.1.0"
 edition = "2024"
+description = "Command-line interface for XTR - structured data extraction from unstructured text"
+license = "MIT"
+repository = "https://github.com/byteowlz/xtr"
+homepage = "https://github.com/byteowlz/xtr"
+documentation = "https://github.com/byteowlz/xtr#readme"
+publish = false
 
 [dependencies]
 anyhow = "1"

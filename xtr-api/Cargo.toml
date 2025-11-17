@@ -2,5 +2,11 @@
 name = "xtr-api"
 version = "0.1.0"
 edition = "2024"
+description = "HTTP API server for XTR - structured data extraction service"
+license = "MIT"
+repository = "https://github.com/byteowlz/xtr"
+homepage = "https://github.com/byteowlz/xtr"
+documentation = "https://github.com/byteowlz/xtr#readme"
+publish = false
 
 [dependencies]
