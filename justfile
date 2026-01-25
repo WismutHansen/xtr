@@ -18,6 +18,10 @@ install:
     rustup show active-toolchain
     cargo fetch
 
+# Install the xtr binary
+install-all:
+    ./scripts/install-xtr.sh
+
 # Run `cargo nextest` since it's faster than `cargo test`, though including
 # --no-fail-fast is important to ensure all tests are run.
 #
