@@ -1,0 +1,114 @@
+{
+  "input_text": "Generate 8 training examples for sentiment analysis with priority detection.\n\nTarget Schema:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"sentiment\": {\n      \"type\": \"string\",\n      \"enum\": [\"positive\", \"negative\", \"neutral\", \"mixed\"]\n    },\n    \"priority\": {\n      \"type\": \"string\",\n      \"enum\": [\"urgent\", \"high\", \"normal\", \"low\"]\n    },\n    \"summary\": {\n      \"type\": \"string\",\n      \"description\": \"Brief summary of the main point\"\n    },\n    \"action_required\": {\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\"sentiment\", \"priority\"]\n}\n\nEnsure all enum values are covered across the examples.",
+  "expected_json": {
+    "examples": [
+      {
+        "input_text": "URGENT: Server is down! All production systems affected. Need immediate response from on-call team.",
+        "expected_json": {
+          "sentiment": "negative",
+          "priority": "urgent",
+          "summary": "Production server outage requiring immediate attention",
+          "action_required": true
+        },
+        "difficulty": "easy",
+        "tags": ["urgent_marker", "technical"]
+      },
+      {
+        "input_text": "Great news! The Q3 results exceeded expectations by 15%. The team did an amazing job. Let's discuss next steps when convenient.",
+        "expected_json": {
+          "sentiment": "positive",
+          "priority": "normal",
+          "summary": "Q3 results exceeded expectations by 15%",
+          "action_required": false
+        },
+        "difficulty": "easy",
+        "tags": ["business", "celebration"]
+      },
+      {
+        "input_text": "FYI - The new coffee machine has been installed in the break room.",
+        "expected_json": {
+          "sentiment": "neutral",
+          "priority": "low",
+          "summary": "New coffee machine installed in break room",
+          "action_required": false
+        },
+        "difficulty": "easy",
+        "tags": ["informational", "office"]
+      },
+      {
+        "input_text": "The client loved the design mockups but has serious concerns about the timeline. They're asking for a revised schedule by end of week. Could go either way at this point.",
+        "expected_json": {
+          "sentiment": "mixed",
+          "priority": "high",
+          "summary": "Client positive on design but concerned about timeline, needs revised schedule",
+          "action_required": true
+        },
+        "difficulty": "medium",
+        "tags": ["client_feedback", "deadline"]
+      },
+      {
+        "input_text": "reminder: team standup tomorrow 9am",
+        "expected_json": {
+          "sentiment": "neutral",
+          "priority": "normal",
+          "summary": "Team standup scheduled for tomorrow at 9am",
+          "action_required": false
+        },
+        "difficulty": "easy",
+        "tags": ["reminder", "meeting", "lowercase"]
+      },
+      {
+        "input_text": "I'm extremely frustrated with the constant delays. However, I appreciate the transparency in communication. Please prioritize fixing the authentication bug before adding new features.",
+        "expected_json": {
+          "sentiment": "mixed",
+          "priority": "high",
+          "summary": "Frustrated with delays but appreciates transparency; requests bug fix prioritization",
+          "action_required": true
+        },
+        "difficulty": "medium",
+        "tags": ["feedback", "bug_report", "conflicting_emotions"]
+      },
+      {
+        "input_text": "Whenever you have a moment (no rush), could you take a look at my draft proposal? I'd love your feedback before the submission deadline next month.",
+        "expected_json": {
+          "sentiment": "positive",
+          "priority": "low",
+          "summary": "Request for feedback on draft proposal before next month's deadline",
+          "action_required": true
+        },
+        "difficulty": "medium",
+        "tags": ["polite_request", "explicit_low_priority"]
+      },
+      {
+        "input_text": "!!!CRITICAL!!! Payment processing completely broken. Customers unable to complete purchases. Revenue impact estimated at $50k/hour. ALL HANDS ON DECK.",
+        "expected_json": {
+          "sentiment": "negative",
+          "priority": "urgent",
+          "summary": "Critical payment processing failure with $50k/hour revenue impact",
+          "action_required": true
+        },
+        "difficulty": "easy",
+        "tags": ["critical", "revenue_impact", "all_caps"]
+      }
+    ],
+    "coverage_report": {
+      "schema_fields_covered": ["sentiment", "priority", "summary", "action_required"],
+      "enum_values_covered": {
+        "sentiment": ["positive", "negative", "neutral", "mixed"],
+        "priority": ["urgent", "high", "normal", "low"]
+      },
+      "difficulty_distribution": {
+        "easy": 5,
+        "medium": 3,
+        "hard": 0,
+        "edge_case": 0
+      },
+      "suggestions": [
+        "Add example with sarcasm (hard to detect sentiment)",
+        "Add example in non-English language",
+        "Add example with no clear priority indicators",
+        "Add edge case with empty or very short input"
+      ]
+    }
+  }
+}

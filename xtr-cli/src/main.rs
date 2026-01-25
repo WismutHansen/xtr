@@ -3,8 +3,10 @@ use anyhow::Result;
 use clap::Parser;
 use clap::Subcommand;
 use clap::ValueEnum;
+use std::fs;
 use std::io::Read;
 use std::io::{self};
+use std::path::PathBuf;
 use xtr_core::ExtractionEngine;
 use xtr_core::config::FeedbackModelOverrides;
 use xtr_core::config::OptimizationSettings;
@@ -197,6 +199,12 @@ enum Commands {
         #[arg(long, help = "Dry run - show what would be deleted")]
         dry_run: bool,
     },
+
+    #[command(about = "Manage task examples")]
+    Examples {
+        #[command(subcommand)]
+        command: ExamplesCommands,
+    },
 }
 
 #[derive(Subcommand)]
@@ -211,6 +219,57 @@ enum CreateCommands {
             help = "Schema name (defaults to input filename without extension)"
         )]
         name: Option<String>,
+    },
+}
+
+#[derive(Subcommand)]
+enum ExamplesCommands {
+    #[command(about = "Convert examples between JSON directory and JSONL formats")]
+    Convert {
+        #[arg(help = "Input path (directory of .json files or .jsonl file)")]
+        input: PathBuf,
+
+        #[arg(
+            long,
+            short,
+            help = "Output path (defaults to input with changed format)"
+        )]
+        output: Option<PathBuf>,
+
+        #[arg(
+            long,
+            help = "Output format: 'jsonl' or 'json' (auto-detected from input if omitted)"
+        )]
+        to: Option<String>,
+    },
+
+    #[command(about = "Generate an example template from a JSON schema")]
+    Template {
+        #[arg(help = "Task name or path to schema file")]
+        task_or_schema: String,
+    },
+
+    #[command(about = "Generate synthetic training examples using the dataset_generator model")]
+    Generate {
+        #[arg(help = "Task name to generate examples for")]
+        task: String,
+
+        #[arg(
+            long,
+            short = 'n',
+            default_value = "5",
+            help = "Number of examples to generate"
+        )]
+        count: u32,
+
+        #[arg(long, short, help = "Output file (JSONL format, defaults to stdout)")]
+        output: Option<PathBuf>,
+
+        #[arg(long, short, help = "Additional context/instructions for generation")]
+        context: Option<String>,
+
+        #[arg(long, help = "Append to output file instead of overwriting")]
+        append: bool,
     },
 }
 
@@ -361,6 +420,193 @@ async fn main() -> Result<()> {
                 println!("No tasks configured yet. Add one to run optimization.");
             }
         }
+        Commands::Examples { command } => match command {
+            ExamplesCommands::Convert { input, output, to } => {
+                handle_examples_convert(&input, output.as_deref(), to.as_deref())?;
+            }
+            ExamplesCommands::Template { task_or_schema } => {
+                handle_examples_template(&engine, &task_or_schema)?;
+            }
+            ExamplesCommands::Generate {
+                task,
+                count,
+                output,
+                context,
+                append,
+            } => {
+                handle_examples_generate(
+                    &engine,
+                    &task,
+                    count,
+                    output.as_deref(),
+                    context.as_deref(),
+                    append,
+                )
+                .await?;
+            }
+        },
+    }
+
+    Ok(())
+}
+
+fn handle_examples_convert(
+    input: &std::path::Path,
+    output: Option<&std::path::Path>,
+    to: Option<&str>,
+) -> Result<()> {
+    let is_jsonl_input = input.extension().and_then(|e| e.to_str()) == Some("jsonl");
+    let is_dir_input = input.is_dir();
+
+    // Determine output format
+    let to_jsonl = match to {
+        Some("jsonl") => true,
+        Some("json") => false,
+        Some(other) => anyhow::bail!("unknown format '{}', use 'json' or 'jsonl'", other),
+        None => {
+            // Auto-detect: if input is jsonl, output json; if input is dir, output jsonl
+            if is_jsonl_input {
+                false
+            } else if is_dir_input {
+                true
+            } else {
+                anyhow::bail!(
+                    "cannot auto-detect output format for '{}', use --to",
+                    input.display()
+                );
+            }
+        }
+    };
+
+    if to_jsonl {
+        // Convert directory -> JSONL
+        if !is_dir_input {
+            anyhow::bail!(
+                "input '{}' is not a directory, cannot convert to JSONL",
+                input.display()
+            );
+        }
+
+        let output_path = output
+            .map(PathBuf::from)
+            .unwrap_or_else(|| input.with_extension("jsonl"));
+
+        let count = xtr_core::convert_json_dir_to_jsonl(input, &output_path)?;
+        println!(
+            "Converted {} examples from '{}' to '{}'",
+            count,
+            input.display(),
+            output_path.display()
+        );
+    } else {
+        // Convert JSONL -> directory
+        if !is_jsonl_input {
+            anyhow::bail!(
+                "input '{}' is not a .jsonl file, cannot convert to JSON directory",
+                input.display()
+            );
+        }
+
+        let output_path = output.map(PathBuf::from).unwrap_or_else(|| {
+            input
+                .file_stem()
+                .map(|s| input.with_file_name(s))
+                .unwrap_or_else(|| input.with_extension(""))
+        });
+
+        let count = xtr_core::convert_jsonl_to_json_dir(input, &output_path)?;
+        println!(
+            "Converted {} examples from '{}' to '{}'",
+            count,
+            input.display(),
+            output_path.display()
+        );
+    }
+
+    Ok(())
+}
+
+fn handle_examples_template(engine: &ExtractionEngine, task_or_schema: &str) -> Result<()> {
+    // Check if it's a file path first
+    let schema_path = PathBuf::from(task_or_schema);
+    let schema: serde_json::Value = if schema_path.exists() {
+        let content = fs::read_to_string(&schema_path)
+            .with_context(|| format!("failed to read schema file '{}'", schema_path.display()))?;
+        serde_json::from_str(&content)
+            .with_context(|| format!("failed to parse schema '{}'", schema_path.display()))?
+    } else {
+        // Try as a task name
+        let task_config = engine.resolve_task(task_or_schema)?;
+        let schema_path = task_config
+            .schema_path
+            .as_ref()
+            .context("task has no schema configured")?;
+        let content = fs::read_to_string(schema_path)
+            .with_context(|| format!("failed to read schema file '{}'", schema_path.display()))?;
+        serde_json::from_str(&content)
+            .with_context(|| format!("failed to parse schema '{}'", schema_path.display()))?
+    };
+
+    let template = xtr_core::generate_example_template(&schema);
+    println!("{}", serde_json::to_string_pretty(&template)?);
+
+    Ok(())
+}
+
+async fn handle_examples_generate(
+    engine: &ExtractionEngine,
+    task: &str,
+    count: u32,
+    output: Option<&std::path::Path>,
+    context: Option<&str>,
+    append: bool,
+) -> Result<()> {
+    use std::io::Write;
+
+    eprintln!("Generating {count} examples for task '{task}'...");
+
+    let examples = engine
+        .generate_examples(task, count, context)
+        .await
+        .context("failed to generate examples")?;
+
+    eprintln!("Generated {} examples", examples.len());
+
+    // Serialize to JSONL
+    let mut jsonl_output = String::new();
+    for example in &examples {
+        let line = serde_json::to_string(example)?;
+        jsonl_output.push_str(&line);
+        jsonl_output.push('\n');
+    }
+
+    if let Some(output_path) = output {
+        let file = if append {
+            fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(output_path)
+                .with_context(|| {
+                    format!("failed to open '{}' for appending", output_path.display())
+                })?
+        } else {
+            fs::File::create(output_path)
+                .with_context(|| format!("failed to create '{}'", output_path.display()))?
+        };
+
+        let mut writer = std::io::BufWriter::new(file);
+        writer.write_all(jsonl_output.as_bytes())?;
+        writer.flush()?;
+
+        eprintln!(
+            "{} {} examples to '{}'",
+            if append { "Appended" } else { "Wrote" },
+            examples.len(),
+            output_path.display()
+        );
+    } else {
+        // Write to stdout
+        print!("{jsonl_output}");
     }
 
     Ok(())

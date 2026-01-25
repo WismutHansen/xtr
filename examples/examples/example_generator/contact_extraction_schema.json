@@ -1,0 +1,95 @@
+{
+  "input_text": "Generate 6 training examples for contact information extraction.\n\nTarget Schema:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"name\": { \"type\": \"string\", \"description\": \"Full name of the person\" },\n    \"email\": { \"type\": \"string\", \"format\": \"email\" },\n    \"phone\": { \"type\": \"string\", \"description\": \"Phone number in any format\" },\n    \"company\": { \"type\": \"string\" },\n    \"role\": { \"type\": \"string\" }\n  },\n  \"required\": [\"name\"]\n}\n\nInclude diverse input formats: business cards, email signatures, LinkedIn profiles, etc.",
+  "expected_json": {
+    "examples": [
+      {
+        "input_text": "John Smith\nSenior Software Engineer\nAcme Corp\njohn.smith@acme.com\n(555) 123-4567",
+        "expected_json": {
+          "name": "John Smith",
+          "email": "john.smith@acme.com",
+          "phone": "(555) 123-4567",
+          "company": "Acme Corp",
+          "role": "Senior Software Engineer"
+        },
+        "difficulty": "easy",
+        "tags": ["business_card", "complete_info"]
+      },
+      {
+        "input_text": "Best regards,\nDr. Maria Garcia-Lopez\nHead of Research & Development\nBioTech Solutions International\nEmail: m.garcia@biotech-solutions.io | Mobile: +1-555-987-6543\nLinkedIn: linkedin.com/in/mariagl",
+        "expected_json": {
+          "name": "Dr. Maria Garcia-Lopez",
+          "email": "m.garcia@biotech-solutions.io",
+          "phone": "+1-555-987-6543",
+          "company": "BioTech Solutions International",
+          "role": "Head of Research & Development"
+        },
+        "difficulty": "medium",
+        "tags": ["email_signature", "title_prefix", "hyphenated_name"]
+      },
+      {
+        "input_text": "Contact: Sarah at 555.CALL.NOW or sarah@example",
+        "expected_json": {
+          "name": "Sarah",
+          "email": "sarah@example",
+          "phone": "555.CALL.NOW",
+          "company": null,
+          "role": null
+        },
+        "difficulty": "hard",
+        "tags": ["informal", "partial_info", "vanity_number", "incomplete_email"]
+      },
+      {
+        "input_text": "Kontakt:\nHans Mueller\nGeschaeftsfuehrer\nMueller GmbH\nTel: +49 30 12345678\nE-Mail: hans@mueller-gmbh.de",
+        "expected_json": {
+          "name": "Hans Mueller",
+          "email": "hans@mueller-gmbh.de",
+          "phone": "+49 30 12345678",
+          "company": "Mueller GmbH",
+          "role": "Geschaeftsfuehrer"
+        },
+        "difficulty": "medium",
+        "tags": ["german", "international", "formal"]
+      },
+      {
+        "input_text": "Feel free to reach out!\n\nCheers,\nAlex",
+        "expected_json": {
+          "name": "Alex",
+          "email": null,
+          "phone": null,
+          "company": null,
+          "role": null
+        },
+        "difficulty": "hard",
+        "tags": ["minimal_info", "informal", "name_only"]
+      },
+      {
+        "input_text": "JENNIFER WONG, MBA, PMP\nVice President, Strategic Initiatives\nGlobal Dynamics Inc. | A Fortune 500 Company\n\nOffice: +1 (212) 555-0100 ext. 4521\nMobile: +1 (917) 555-0199\nFax: +1 (212) 555-0101\njennifer.wong@globaldynamics.com\nwww.globaldynamics.com\n\n100 Park Avenue, 45th Floor\nNew York, NY 10017",
+        "expected_json": {
+          "name": "Jennifer Wong",
+          "email": "jennifer.wong@globaldynamics.com",
+          "phone": "+1 (212) 555-0100 ext. 4521",
+          "company": "Global Dynamics Inc.",
+          "role": "Vice President, Strategic Initiatives"
+        },
+        "difficulty": "medium",
+        "tags": ["corporate", "multiple_phones", "credentials", "complete_info"]
+      }
+    ],
+    "coverage_report": {
+      "schema_fields_covered": ["name", "email", "phone", "company", "role"],
+      "enum_values_covered": {},
+      "difficulty_distribution": {
+        "easy": 1,
+        "medium": 3,
+        "hard": 2,
+        "edge_case": 0
+      },
+      "suggestions": [
+        "Add example with OCR errors",
+        "Add example with Asian name format (family name first)",
+        "Add example with no contact info at all (edge case)",
+        "Add example with multiple people's contact info"
+      ]
+    }
+  }
+}

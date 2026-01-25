@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Example Generator Schema",
+  "description": "Generates training examples for structured data extraction tasks. Given a JSON schema describing the target extraction format, generate diverse, realistic examples that can be used to train and optimize extraction models.",
+  "properties": {
+    "examples": {
+      "type": "array",
+      "description": "Array of generated training examples",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input_text": {
+            "type": "string",
+            "description": "Realistic input text that would be provided to the extraction task. Should be diverse in format (emails, documents, web pages, forms, etc.), length, writing style, and complexity. Include realistic noise, typos, or formatting variations when appropriate."
+          },
+          "expected_json": {
+            "type": "object",
+            "description": "The correctly extracted structured data that matches the target schema. Must be valid according to the provided schema and accurately reflect the information in input_text."
+          },
+          "additional_context": {
+            "type": "string",
+            "description": "Optional context that might help with extraction (e.g., 'This is a German invoice', 'Extract only the primary contact'). Use sparingly - most examples should work without additional context."
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": ["easy", "medium", "hard", "edge_case"],
+            "description": "Difficulty level of this example. Easy: clear, well-formatted input. Medium: some ambiguity or noise. Hard: complex formatting or multiple entities. Edge case: unusual scenarios, missing data, or adversarial inputs."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tags describing characteristics of this example (e.g., 'multilingual', 'incomplete_data', 'ocr_noise', 'formal', 'informal', 'handwritten')."
+          }
+        },
+        "required": ["input_text", "expected_json"]
+      },
+      "minItems": 1
+    },
+    "coverage_report": {
+      "type": "object",
+      "description": "Summary of what the generated examples cover",
+      "properties": {
+        "schema_fields_covered": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of schema fields that have at least one example"
+        },
+        "enum_values_covered": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": "For each enum field, which values are covered by examples"
+        },
+        "difficulty_distribution": {
+          "type": "object",
+          "properties": {
+            "easy": { "type": "integer" },
+            "medium": { "type": "integer" },
+            "hard": { "type": "integer" },
+            "edge_case": { "type": "integer" }
+          },
+          "description": "Count of examples at each difficulty level"
+        },
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Suggestions for additional examples that would improve coverage"
+        }
+      }
+    }
+  },
+  "required": ["examples"]
+}

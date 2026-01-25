@@ -49,6 +49,15 @@ base_url = "http://localhost:8081/v1"
 api_key = "not_needed"
 adapter = "chat"
 
+# Strong model for generating synthetic training examples.
+# Used by the built-in example_generator task. Should be a high-quality model
+# capable of understanding schemas and generating diverse, realistic examples.
+[models.defaults.dataset_generator]
+name = "claude-sonnet-4-20250514"
+base_url = "https://api.anthropic.com/v1"
+api_key = "$ANTHROPIC_API_KEY"
+adapter = "anthropic"
+
 [[models.defaults.fallbacks]]
 name = "llama-backup"
 base_url = "http://localhost:8082/v1"

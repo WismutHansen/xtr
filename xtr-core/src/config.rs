@@ -307,6 +307,7 @@ pub struct MetricsConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct LoggingSettings {
     /// Enable verbose logging of complete request-response cycle with the LLM
     pub verbose_llm_logging: bool,
@@ -323,15 +324,6 @@ impl Default for MetricsConfig {
             base_schema_score: 0.2,
             field_weight: 0.5,
             coverage_weight: 0.1,
-        }
-    }
-}
-
-impl Default for LoggingSettings {
-    fn default() -> Self {
-        Self {
-            verbose_llm_logging: false,
-            llm_log_dir: None,
         }
     }
 }
@@ -389,10 +381,21 @@ impl ModelSection {
             fallbacks.push(descriptor);
         }
 
+        // Resolve dataset_generator if configured
+        let dataset_generator = if let Some(spec) = &self.defaults.dataset_generator {
+            Some(
+                spec.clone()
+                    .into_descriptor("dataset_generator", task_name)?,
+            )
+        } else {
+            None
+        };
+
         Ok(ResolvedModelConfig {
             teacher,
             student,
             fallbacks,
+            dataset_generator,
         })
     }
 }
@@ -403,6 +406,9 @@ pub struct ModelDefaults {
     pub teacher: ModelSpec,
     pub student: ModelSpec,
     pub fallbacks: Vec<ModelSpec>,
+    /// Strong model for generating synthetic training examples.
+    /// Used by the built-in example_generator task.
+    pub dataset_generator: Option<ModelSpec>,
 }
 
 impl Default for ModelDefaults {
@@ -425,6 +431,7 @@ impl Default for ModelDefaults {
                 request_timeout_secs: Some(60),
             },
             fallbacks: Vec::new(),
+            dataset_generator: None,
         }
     }
 }
@@ -676,6 +683,8 @@ pub struct ResolvedModelConfig {
     pub teacher: ModelDescriptor,
     pub student: ModelDescriptor,
     pub fallbacks: Vec<ModelDescriptor>,
+    /// Strong model for generating synthetic training examples.
+    pub dataset_generator: Option<ModelDescriptor>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

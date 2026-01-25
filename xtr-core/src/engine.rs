@@ -18,7 +18,8 @@ use crate::config::ResolvedTaskConfig;
 use crate::config::load_or_initialize_config;
 use crate::lm::ModelHandle;
 use crate::lm::TaskModelHandles;
-use crate::lm::{disable_verbose_llm_logging, enable_verbose_llm_logging};
+use crate::lm::disable_verbose_llm_logging;
+use crate::lm::enable_verbose_llm_logging;
 use crate::optimization::ExtractionProgram;
 use crate::optimization::GepaOutcome;
 use crate::optimization::GepaRunner;
@@ -274,10 +275,10 @@ impl ExtractionEngine {
         }
 
         let mut context_parts = Vec::new();
-        if let Some(ctx) = additional_context {
-            if !ctx.trim().is_empty() {
-                context_parts.push(ctx.to_string());
-            }
+        if let Some(ctx) = additional_context
+            && !ctx.trim().is_empty()
+        {
+            context_parts.push(ctx.to_string());
         }
 
         if task.include_timestamp {
@@ -357,6 +358,128 @@ impl ExtractionEngine {
         Err(anyhow!(
             "all configured models failed to produce valid output: {summary}"
         ))
+    }
+
+    /// Generate synthetic training examples for a task using the dataset_generator model.
+    ///
+    /// Returns a vector of raw examples that can be serialized to JSONL.
+    pub async fn generate_examples(
+        &self,
+        task_name: &str,
+        count: u32,
+        additional_context: Option<&str>,
+    ) -> Result<Vec<crate::examples::RawTaskExample>> {
+        let task = self.resolve_task(task_name)?;
+
+        // Get the dataset_generator model
+        let generator_descriptor = task
+            .models
+            .dataset_generator
+            .as_ref()
+            .ok_or_else(|| anyhow!("no dataset_generator model configured - add [models.defaults.dataset_generator] to your config.toml"))?;
+
+        let generator_model = crate::lm::build_model_handle(generator_descriptor)
+            .await
+            .context("failed to build dataset_generator model")?;
+
+        // Load the task's schema
+        let schema_path = task
+            .schema_path
+            .as_ref()
+            .ok_or_else(|| anyhow!("task '{task_name}' is missing schema path"))?;
+        let schema_content = std::fs::read_to_string(schema_path).with_context(|| {
+            format!(
+                "failed to read schema for task '{}' at {}",
+                task_name,
+                schema_path.display()
+            )
+        })?;
+
+        // Build the prompt for example generation
+        let mut context_parts = vec![format!("Generate {count} diverse training examples.")];
+        if let Some(ctx) = additional_context {
+            context_parts.push(ctx.to_string());
+        }
+        if let Some(desc) = &task.description {
+            context_parts.push(format!("Task description: {desc}"));
+        }
+        let context = context_parts.join("\n\n");
+
+        // Load the example_generator schema (embedded)
+        let example_generator_schema =
+            include_str!("../../examples/schemas/example_generator.json");
+
+        // System prompt for example generation
+        let system_prompt = r#"You are an expert at generating high-quality training examples for structured data extraction tasks.
+
+Given a target JSON schema, generate diverse and realistic examples that:
+1. Cover different input formats (emails, documents, forms, web pages, etc.)
+2. Include varying difficulty levels (easy, medium, hard, edge cases)
+3. Represent realistic data with appropriate noise and variations
+4. Accurately extract the correct structured output
+
+Generate examples that would help train a model to perform the extraction task well."#;
+
+        let input_text =
+            format!("Target Schema for extraction task '{task_name}':\n\n{schema_content}");
+
+        // Configure the generator model globally
+        generator_model.configure_global();
+
+        // Create extraction program and set the instruction
+        let mut program = ExtractionProgram::new();
+        OptimizableTrait::update_signature_instruction(
+            program.solver_mut(),
+            system_prompt.to_string(),
+        )?;
+
+        // Build the example for dspy
+        let dspy_example = example! {
+            "schema": "input" => example_generator_schema,
+            "input_text": "input" => &input_text,
+            "additional_context": "input" => &context
+        };
+
+        let response = program.forward(dspy_example).await?;
+        let output_json = Self::extract_output_json(&response)?;
+
+        // Parse the response
+        let parsed: serde_json::Value = serde_json::from_str(&output_json)
+            .with_context(|| "failed to parse example generator output as JSON")?;
+
+        // Extract the examples array
+        let examples_array = parsed
+            .get("examples")
+            .and_then(|e| e.as_array())
+            .ok_or_else(|| anyhow!("example generator output missing 'examples' array"))?;
+
+        let mut result = Vec::with_capacity(examples_array.len());
+        for (i, example_value) in examples_array.iter().enumerate() {
+            let ex_input_text = example_value
+                .get("input_text")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| anyhow!("example {} missing 'input_text'", i + 1))?
+                .to_string();
+
+            let expected_json = example_value
+                .get("expected_json")
+                .cloned()
+                .ok_or_else(|| anyhow!("example {} missing 'expected_json'", i + 1))?;
+
+            let ex_context = example_value
+                .get("additional_context")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
+
+            result.push(crate::examples::RawTaskExample {
+                input_text: ex_input_text,
+                expected_json,
+                additional_context: ex_context,
+                images: Vec::new(),
+            });
+        }
+
+        Ok(result)
     }
 
     async fn try_inference_independent(
@@ -547,7 +670,8 @@ impl ExtractionEngine {
         let record = CollectedExample {
             input_text,
             expected_json: parsed_output,
-            additional_context: (!additional_context.trim().is_empty()).then(|| additional_context),
+            additional_context: (!additional_context.trim().is_empty())
+                .then_some(additional_context),
             images: Vec::new(),
         };
 

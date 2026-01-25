@@ -1,0 +1,67 @@
+{
+  "input_text": "Generate 5 diverse training examples for a title extraction task.\n\nTarget Schema:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"title\": {\n      \"type\": \"string\",\n      \"description\": \"The main title or headline\"\n    },\n    \"subtitle\": {\n      \"type\": \"string\",\n      \"description\": \"Optional subtitle or tagline\"\n    }\n  },\n  \"required\": [\"title\"]\n}\n\nGenerate examples with varying difficulty and input formats.",
+  "expected_json": {
+    "examples": [
+      {
+        "input_text": "The Art of War\nby Sun Tzu",
+        "expected_json": {
+          "title": "The Art of War",
+          "subtitle": null
+        },
+        "difficulty": "easy",
+        "tags": ["book", "simple"]
+      },
+      {
+        "input_text": "BREAKING NEWS: Scientists Discover New Species in Amazon - Could Change Everything We Know About Evolution",
+        "expected_json": {
+          "title": "Scientists Discover New Species in Amazon",
+          "subtitle": "Could Change Everything We Know About Evolution"
+        },
+        "difficulty": "medium",
+        "tags": ["news", "headline", "contains_prefix"]
+      },
+      {
+        "input_text": "  the quick brown fox   \n\n  A Story About Jumping Over Lazy Dogs  ",
+        "expected_json": {
+          "title": "The Quick Brown Fox",
+          "subtitle": "A Story About Jumping Over Lazy Dogs"
+        },
+        "difficulty": "medium",
+        "tags": ["whitespace_noise", "case_normalization"]
+      },
+      {
+        "input_text": "Product: XR-7500 Ultra Pro Gaming Headset | Premium Wireless Audio Experience",
+        "expected_json": {
+          "title": "XR-7500 Ultra Pro Gaming Headset",
+          "subtitle": "Premium Wireless Audio Experience"
+        },
+        "difficulty": "medium",
+        "tags": ["product", "contains_prefix", "delimiter_separated"]
+      },
+      {
+        "input_text": "",
+        "expected_json": {
+          "title": "",
+          "subtitle": null
+        },
+        "difficulty": "edge_case",
+        "tags": ["empty_input"]
+      }
+    ],
+    "coverage_report": {
+      "schema_fields_covered": ["title", "subtitle"],
+      "enum_values_covered": {},
+      "difficulty_distribution": {
+        "easy": 1,
+        "medium": 3,
+        "hard": 0,
+        "edge_case": 1
+      },
+      "suggestions": [
+        "Add examples with non-English titles",
+        "Add examples with very long titles",
+        "Add examples where subtitle appears before title"
+      ]
+    }
+  }
+}
