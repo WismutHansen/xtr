@@ -99,10 +99,10 @@ pub fn handle_history(engine: &ExtractionEngine, task: Option<&str>, detailed: b
                 .unwrap_or("unknown");
 
             // Filter by task if specified
-            if let Some(filter_task) = task {
-                if run_task != filter_task {
-                    continue;
-                }
+            if let Some(filter_task) = task
+                && run_task != filter_task
+            {
+                continue;
             }
 
             let relative_path = format!(
@@ -295,12 +295,12 @@ pub fn handle_clean(engine: &ExtractionEngine, older_than_days: u32, dry_run: bo
             }
 
             let metadata = fs::metadata(&run_path)?;
-            if let Ok(modified) = metadata.modified() {
-                if modified < cutoff_time {
-                    let size = calculate_dir_size(&run_path)?;
-                    total_size += size;
-                    to_delete.push((run_path, size));
-                }
+            if let Ok(modified) = metadata.modified()
+                && modified < cutoff_time
+            {
+                let size = calculate_dir_size(&run_path)?;
+                total_size += size;
+                to_delete.push((run_path, size));
             }
         }
     }

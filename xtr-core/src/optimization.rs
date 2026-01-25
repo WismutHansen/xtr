@@ -104,19 +104,18 @@ impl Module for ExtractionProgram {
 
         let output_json_val = prediction.get("output_json", None);
 
-        if let Some(output_str) = output_json_val.as_str() {
-            if !output_str.is_empty() {
-                if let Ok(Value::String(inner)) = serde_json::from_str::<Value>(output_str) {
-                    if self.verbose {
-                        eprintln!("Successfully unescaped JSON string");
-                    }
-                    let mut fixed_prediction = prediction;
-                    fixed_prediction
-                        .data
-                        .insert("output_json".to_string(), inner.into());
-                    return Ok(fixed_prediction);
-                }
+        if let Some(output_str) = output_json_val.as_str()
+            && !output_str.is_empty()
+            && let Ok(Value::String(inner)) = serde_json::from_str::<Value>(output_str)
+        {
+            if self.verbose {
+                eprintln!("Successfully unescaped JSON string");
             }
+            let mut fixed_prediction = prediction;
+            fixed_prediction
+                .data
+                .insert("output_json".to_string(), inner.into());
+            return Ok(fixed_prediction);
         }
 
         Ok(prediction)

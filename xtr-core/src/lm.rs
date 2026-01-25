@@ -18,7 +18,8 @@ use dspy_rs::Prediction;
 use dspy_rs::adapter::Adapter;
 use dspy_rs::serde_utils::get_iter_from_value;
 use rig::tool::ToolDyn;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json::Value;
 
 use crate::config::ModelDescriptor;
@@ -78,12 +79,11 @@ fn log_llm_interaction(
     response_content: &str,
     usage: &dspy_rs::LmUsage,
 ) {
-    if let Some(log_dir) = get_llm_log_dir() {
-        if let Err(err) =
+    if let Some(log_dir) = get_llm_log_dir()
+        && let Err(err) =
             try_log_llm_interaction(model, messages, response_content, usage, &log_dir)
-        {
-            eprintln!("Warning: failed to write LLM log: {err}");
-        }
+    {
+        eprintln!("Warning: failed to write LLM log: {err}");
     }
 }
 
@@ -227,16 +227,16 @@ impl JsonAdapter {
             return Some(value);
         }
 
-        if let Some(stripped) = Self::strip_code_fence(trimmed) {
-            if let Ok(value) = serde_json::from_str::<Value>(&stripped) {
-                return Some(value);
-            }
+        if let Some(stripped) = Self::strip_code_fence(trimmed)
+            && let Ok(value) = serde_json::from_str::<Value>(&stripped)
+        {
+            return Some(value);
         }
 
-        if let Some(fragment) = Self::extract_braced_fragment(trimmed) {
-            if let Ok(value) = serde_json::from_str::<Value>(&fragment) {
-                return Some(value);
-            }
+        if let Some(fragment) = Self::extract_braced_fragment(trimmed)
+            && let Ok(value) = serde_json::from_str::<Value>(&fragment)
+        {
+            return Some(value);
         }
 
         None

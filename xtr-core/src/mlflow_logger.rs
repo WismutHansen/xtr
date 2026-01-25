@@ -118,15 +118,15 @@ impl GepaLogger {
 
     pub fn log_config(&self, config: &serde_json::Value) -> Result<()> {
         #[cfg(feature = "mlflow")]
-        if let Some(run) = &self.run {
-            if let Some(obj) = config.as_object() {
-                for (key, value) in obj {
-                    let value_str = match value {
-                        serde_json::Value::String(s) => s.clone(),
-                        other => other.to_string(),
-                    };
-                    let _ = run.log_parameter(key, &value_str);
-                }
+        if let Some(run) = &self.run
+            && let Some(obj) = config.as_object()
+        {
+            for (key, value) in obj {
+                let value_str = match value {
+                    serde_json::Value::String(s) => s.clone(),
+                    other => other.to_string(),
+                };
+                let _ = run.log_parameter(key, &value_str);
             }
         }
 

@@ -1,0 +1,6 @@
+{
+  "input_text": "Why does my FastAPI backend work on macOS but not on Ubuntu when called from Next.js?",
+  "expected_json": {
+    "title": "FastAPI Not Reachable from Next.js on Ubuntu"
+  }
+}

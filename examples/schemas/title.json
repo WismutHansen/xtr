@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ChatSessionTitle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "A short, descriptive title summarizing the chat session in the same language as the source",
+      "minLength": 3,
+      "maxLength": 80
+    }
+  }
+}
