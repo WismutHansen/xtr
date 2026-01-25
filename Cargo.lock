@@ -4674,11 +4674,11 @@ checksum = "ea2f10b9bb0928dfb1b42b65e1f9e36f7f54dbdf08457afefb38afcdec4fa2bb"
 
 [[package]]
 name = "xtr-api"
-version = "0.2.0"
+version = "0.3.0"
 
 [[package]]
 name = "xtr-cli"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -4692,7 +4692,7 @@ dependencies = [
 
 [[package]]
 name = "xtr-core"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "async-trait",

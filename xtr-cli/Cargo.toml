@@ -1,6 +1,6 @@
 [package]
 name = "xtr-cli"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 description = "Command-line interface for XTR - structured data extraction from unstructured text"
 license = "MIT"
