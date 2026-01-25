@@ -1,0 +1,48 @@
+{"input_text":"Why does my FastAPI backend work on macOS but not on Ubuntu when called from Next.js?","expected_json":{"title":"FastAPI Not Reachable from Next.js on Ubuntu"}}
+{"input_text":"Como posso automatizar o monitoramento de notícias sobre meu podcast?","expected_json":{"title":"Monitoramento automatizado de notícias de podcast"}}
+{"input_text":"Vorrei progettare un semplice sistema di autenticazione per un piccolo strumento FastAPI interno.","expected_json":{"title":"Sistema di autenticazione semplice per FastAPI"}}
+{"input_text":"Comment surveiller automatiquement les mentions de mon podcast et recevoir des notifications ?","expected_json":{"title":"Surveillance automatique des mentions de podcast"}}
+{"input_text":"Warum ist mein FastAPI-Backend unter Ubuntu aus Next.js nicht erreichbar, aber unter macOS schon?","expected_json":{"title":"FastAPI aus Next.js unter Ubuntu nicht erreichbar"}}
+{"input_text":"How can I monitor news mentions of my podcast automatically and get notified?","expected_json":{"title":"Automated Monitoring of Podcast News Mentions"}}
+{"input_text":"Can you help me design a simple authentication system for a small internal FastAPI tool?","expected_json":{"title":"Simple Authentication for FastAPI Internal Tool"}}
+{"input_text":"I want to convert EPUB ebooks into audiobooks using Coqui TTS and split them by chapter.","expected_json":{"title":"EPUB to Audiobook Conversion with Coqui TTS"}}
+{"input_text":"My Docker container exits immediately without logs when started via docker-compose.","expected_json":{"title":"Docker Container Exits Immediately"}}
+{"input_text":"Wie kann ich meine SSH-Keys sauber zwischen mehreren Rechnern verwalten?","expected_json":{"title":"SSH-Keys zwischen Rechnern verwalten"}}
+{"input_text":"Estoy aprendiendo Go y quiero reemplazar un backend en Python poco a poco.","expected_json":{"title":"Migración gradual de Python a Go"}}
+{"input_text":"How do I add a tray menu to a cross-platform desktop app?","expected_json":{"title":"Cross-Platform Tray Menu"}}
+{"input_text":"Mon application FastAPI est lente en production mais rapide en local.","expected_json":{"title":"FastAPI lente en production"}}
+{"input_text":"Quero criar um pequeno serviço interno com autenticação básica.","expected_json":{"title":"Serviço interno com autenticação"}}
+{"input_text":"Why is CORS blocking my frontend requests?","expected_json":{"title":"CORS Blocking Frontend Requests"}}
+{"input_text":"Ich möchte PDFs automatisch sinnvoll umbenennen.","expected_json":{"title":"PDFs automatisch umbenennen"}}
+{"input_text":"How can I split long text into chapters automatically?","expected_json":{"title":"Automatic Chapter Splitting"}}
+{"input_text":"Come posso salvare configurazioni in file leggibili?","expected_json":{"title":"Configurazioni in file leggibili"}}
+{"input_text":"My FastAPI server crashes when handling multiple concurrent requests.","expected_json":{"title":"FastAPI Crashes Under Load"}}
+{"input_text":"Wie kann ich einen einfachen Cronjob für Backups einrichten?","expected_json":{"title":"Einfacher Cronjob für Backups"}}
+{"input_text":"Necesito filtrar spam y detectar temas interesantes en textos.","expected_json":{"title":"Filtrado de spam y temas"}}
+{"input_text":"How do I package a Python runtime with Tauri?","expected_json":{"title":"Python Runtime in Tauri"}}
+{"input_text":"Mon conteneur Docker ne peut pas accéder au réseau interne.","expected_json":{"title":"Docker sans accès réseau"}}
+{"input_text":"Quero gerar documentos PDF a partir de dados estruturados.","expected_json":{"title":"Geração de PDFs estruturados"}}
+{"input_text":"Warum ist meine SQLite-Datenbank plötzlich gesperrt?","expected_json":{"title":"SQLite Datenbank gesperrt"}}
+{"input_text":"How can I implement OAuth without overengineering?","expected_json":{"title":"Lightweight OAuth Implementation"}}
+{"input_text":"Voglio usare PostgreSQL invece di SQLite.","expected_json":{"title":"Wechsel zu PostgreSQL"}}
+{"input_text":"How do I stream progress updates from a FastAPI backend?","expected_json":{"title":"Streaming Progress from FastAPI"}}
+{"input_text":"My FastAPI backend works fine during development, but as soon as I deploy it and start sending multiple concurrent requests from the frontend, the server becomes unstable and sometimes crashes without clear error messages.","expected_json":{"title":"FastAPI Crashes Under Load"}}
+{"input_text":"I want to set up an automated backup strategy for my home server that runs every night, keeps old backups for a few weeks, and does not require manual intervention once configured.","expected_json":{"title":"Automated Nightly Backups"}}
+{"input_text":"Estoy trabajando con muchos textos largos y necesito un sistema que pueda filtrar spam, identificar temas interesantes y preparar los datos para un modelo de aprendizaje automático.","expected_json":{"title":"Filtrado de spam y temas"}}
+{"input_text":"I am building a cross-platform desktop application and I would like to bundle a Python runtime so users do not have to install Python themselves on Windows, macOS, or Linux.","expected_json":{"title":"Bundled Python Runtime"}}
+{"input_text":"Mon conteneur Docker démarre correctement, mais il ne peut pas accéder aux services internes du réseau, même si les autres conteneurs peuvent communiquer entre eux sans problème.","expected_json":{"title":"Docker Accès Réseau Interne"}}
+{"input_text":"Quero gerar documentos PDF a partir de dados estruturados como JSON ou banco de dados, mantendo os arquivos fáceis de editar e automatizar no futuro.","expected_json":{"title":"Geração de PDFs Automatizada"}}
+{"input_text":"Warum ist meine SQLite-Datenbank plötzlich gesperrt, obwohl nur ein einzelner Dienst darauf zugreift und vorher alles problemlos funktioniert hat?","expected_json":{"title":"SQLite Datenbank Gesperrt"}}
+{"input_text":"I want to add authentication to a small internal tool, but I am worried that OAuth or OpenID Connect might be too complex for such a limited use case.","expected_json":{"title":"Simple Authentication Design"}}
+{"input_text":"Voglio migrare da SQLite a PostgreSQL perché l'applicazione sta crescendo e ho bisogno di migliori funzionalità di concorrenza e affidabilità.","expected_json":{"title":"Migrazione a PostgreSQL"}}
+{"input_text":"I need a way to stream progress updates from a FastAPI backend to a web frontend so users can see what long-running tasks are doing in real time.","expected_json":{"title":"FastAPI Progress Streaming"}}
+{"input_text":"So here’s the situation: my FastAPI backend runs fine locally, tests pass, everything looks good. But once I deploy it to the server and connect it to the frontend, requests start timing out. Sometimes I also see random 502 errors in the proxy logs, but not always.","expected_json":{"title":"FastAPI Deployment Timeouts"}}
+{"input_text":"I have a small home server running 24/7. Right now I manually copy files for backups, which is annoying and error-prone. I want something automated, preferably running at night, rotating old backups, and sending me a notification if something fails.","expected_json":{"title":"Automated Backup Strategy"}}
+{"input_text":"Estoy recopilando muchos textos de distintas fuentes, como RSS, redes sociales y documentos internos. El problema es que hay mucho ruido y spam, y necesito identificar qué temas son realmente interesantes antes de entrenar un modelo.","expected_json":{"title":"Detección de temas y spam"}}
+{"input_text":"I’m experimenting with Tauri for a desktop app and I’d like to ship a Python-based backend with it. Ideally users should not even notice Python is involved, regardless of whether they are on Windows, macOS, or Linux.","expected_json":{"title":"Python Backend in Tauri"}}
+{"input_text":"Mon conteneur Docker démarre sans erreur, mais quand j’essaie d’appeler une API interne, la requête échoue. Les ports semblent ouverts, le firewall est désactivé, et pourtant le service reste inaccessible.","expected_json":{"title":"Docker Réseau Inaccessible"}}
+{"input_text":"Quero criar documentos como faturas e orçamentos a partir de dados estruturados. No futuro, quero poder mudar o layout facilmente e talvez gerar tanto PDF quanto DOCX.","expected_json":{"title":"Geração de documentos automatizada"}}
+{"input_text":"Warum ist meine SQLite-Datenbank plötzlich gesperrt? Es gibt keine Fehlermeldung außer 'database is locked', und das passiert erst seit ich einen zweiten Hintergrundprozess hinzugefügt habe.","expected_json":{"title":"SQLite Database Locked"}}
+{"input_text":"I want to protect a small internal web tool with authentication, but I really don’t want to introduce a full OAuth or SSO setup if a simpler solution would be sufficient.","expected_json":{"title":"Lightweight Authentication Design"}}
+{"input_text":"Voglio spostare la mia applicazione da SQLite a PostgreSQL perché sempre più utenti accedono gleichzeitig, e ho paura di problemi di concorrenza e dati corrotti.","expected_json":{"title":"Migrazione SQLite PostgreSQL"}}
+{"input_text":"I have a long-running background task in FastAPI that processes text and generates audio. From the frontend perspective, it just looks frozen. I need some way to stream progress or status updates.","expected_json":{"title":"FastAPI Task Progress"}}
