@@ -1,0 +1,381 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/byteowlz/xtr/schemas/config.schema.json",
+  "title": "XTR Configuration",
+  "description": "Configuration schema for the XTR structured extraction engine",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "logging": {
+      "$ref": "#/$defs/LoggingSettings"
+    },
+    "metrics": {
+      "$ref": "#/$defs/MetricsConfig"
+    },
+    "models": {
+      "$ref": "#/$defs/ModelSection"
+    },
+    "storage": {
+      "$ref": "#/$defs/StorageSettings"
+    },
+    "data_collection": {
+      "$ref": "#/$defs/DataCollectionSettings"
+    },
+    "mlflow": {
+      "$ref": "#/$defs/MlflowSettings"
+    },
+    "optimization": {
+      "$ref": "#/$defs/OptimizationSection"
+    },
+    "tasks": {
+      "type": "object",
+      "description": "Task-specific configuration keyed by task name",
+      "additionalProperties": {
+        "$ref": "#/$defs/TaskConfig"
+      }
+    }
+  },
+  "$defs": {
+    "LoggingSettings": {
+      "type": "object",
+      "description": "Logging configuration for LLM request/response tracking",
+      "additionalProperties": false,
+      "properties": {
+        "verbose_llm_logging": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable verbose logging of complete request-response cycle with the LLM"
+        },
+        "llm_log_dir": {
+          "type": "string",
+          "description": "Directory where LLM request-response logs will be written as JSON files. Supports ~ and $ENV expansion."
+        }
+      }
+    },
+    "MetricsConfig": {
+      "type": "object",
+      "description": "Configuration for evaluation metrics used during optimization",
+      "additionalProperties": false,
+      "properties": {
+        "extra_field_weight": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.5,
+          "description": "Weight for penalizing extra/hallucinated fields (0.0-1.0). Lower values = lighter penalty."
+        },
+        "beta": {
+          "type": "number",
+          "minimum": 0.0,
+          "default": 1.5,
+          "description": "Beta parameter for F-beta score. Values > 1.0 favor recall, < 1.0 favor precision."
+        },
+        "base_parse_score": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.2,
+          "description": "Base score awarded for valid JSON parsing"
+        },
+        "base_schema_score": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.2,
+          "description": "Additional score awarded for schema validation"
+        },
+        "field_weight": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.5,
+          "description": "Weight for field-level quality score (precision/recall)"
+        },
+        "coverage_weight": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.1,
+          "description": "Weight for coverage bonus (encourages completeness)"
+        }
+      }
+    },
+    "ModelSpec": {
+      "type": "object",
+      "description": "Specification for a language model endpoint",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Model identifier/name"
+        },
+        "base_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base URL for the model API endpoint"
+        },
+        "api_key": {
+          "type": "string",
+          "description": "API key for authentication. Supports $ENV expansion."
+        },
+        "adapter": {
+          "type": "string",
+          "enum": ["chat", "anthropic", "completion"],
+          "description": "API adapter type: 'chat' for OpenAI-compatible, 'anthropic' for Anthropic API"
+        },
+        "request_timeout_secs": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 60,
+          "description": "Request timeout in seconds"
+        },
+        "max_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum tokens for model response"
+        }
+      }
+    },
+    "ModelDefaults": {
+      "type": "object",
+      "description": "Default model configuration",
+      "additionalProperties": false,
+      "properties": {
+        "teacher": {
+          "$ref": "#/$defs/ModelSpec",
+          "description": "Default teacher model (typically larger/stronger)"
+        },
+        "student": {
+          "$ref": "#/$defs/ModelSpec",
+          "description": "Default student model (typically smaller/faster)"
+        },
+        "fallbacks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ModelSpec"
+          },
+          "description": "Fallback models tried in order if primary models fail"
+        },
+        "dataset_generator": {
+          "$ref": "#/$defs/ModelSpec",
+          "description": "Strong model for generating synthetic training examples"
+        }
+      }
+    },
+    "TaskModelOverrides": {
+      "type": "object",
+      "description": "Per-task model overrides",
+      "additionalProperties": false,
+      "properties": {
+        "teacher": {
+          "$ref": "#/$defs/ModelSpec",
+          "description": "Override teacher model for this task"
+        },
+        "student": {
+          "$ref": "#/$defs/ModelSpec",
+          "description": "Override student model for this task"
+        },
+        "fallbacks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ModelSpec"
+          },
+          "description": "Override fallback models for this task"
+        }
+      }
+    },
+    "ModelSection": {
+      "type": "object",
+      "description": "Model configuration section",
+      "additionalProperties": false,
+      "properties": {
+        "defaults": {
+          "$ref": "#/$defs/ModelDefaults",
+          "description": "Default model configuration used for all tasks unless overridden"
+        },
+        "tasks": {
+          "type": "object",
+          "description": "Per-task model overrides keyed by task name",
+          "additionalProperties": {
+            "$ref": "#/$defs/TaskModelOverrides"
+          }
+        }
+      }
+    },
+    "StorageSettings": {
+      "type": "object",
+      "description": "Storage directory configuration. Supports ~ and $ENV expansion.",
+      "additionalProperties": false,
+      "properties": {
+        "data_dir": {
+          "type": "string",
+          "description": "Override data directory (default: $XDG_DATA_HOME/xtr)"
+        },
+        "state_dir": {
+          "type": "string",
+          "description": "Override state directory (default: $XDG_STATE_HOME/xtr)"
+        },
+        "cache_dir": {
+          "type": "string",
+          "description": "Override cache directory (default: $XDG_STATE_HOME/xtr/cache)"
+        }
+      }
+    },
+    "DataCollectionSettings": {
+      "type": "object",
+      "description": "Configuration for collecting inference examples",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable collection of inference inputs/outputs as JSON examples"
+        },
+        "output_dir": {
+          "type": "string",
+          "description": "Directory for collected examples. Supports ~ and $ENV expansion."
+        }
+      }
+    },
+    "MlflowSettings": {
+      "type": "object",
+      "description": "MLflow experiment tracking configuration",
+      "additionalProperties": false,
+      "properties": {
+        "tracking_uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "MLflow tracking server URI (e.g., http://localhost:5000)"
+        },
+        "experiment_name": {
+          "type": "string",
+          "default": "xtr-optimization",
+          "description": "MLflow experiment name"
+        },
+        "local_logging": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable local structured logging to disk"
+        },
+        "log_dir": {
+          "type": "string",
+          "description": "Directory for local optimization logs. Supports ~ and $ENV expansion."
+        }
+      }
+    },
+    "FeedbackModelOverrides": {
+      "type": "object",
+      "description": "Feedback models for optimization evaluation",
+      "additionalProperties": false,
+      "properties": {
+        "teacher": {
+          "$ref": "#/$defs/ModelSpec",
+          "description": "Model for teacher feedback evaluation"
+        },
+        "student": {
+          "$ref": "#/$defs/ModelSpec",
+          "description": "Model for student feedback evaluation"
+        }
+      }
+    },
+    "OptimizationSettings": {
+      "type": "object",
+      "description": "Optimization hyperparameters",
+      "additionalProperties": false,
+      "properties": {
+        "iterations": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 4,
+          "description": "Number of evolutionary iterations"
+        },
+        "rollouts_per_iteration": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 6,
+          "description": "Number of trials per iteration for averaging stochastic LM behavior"
+        },
+        "max_lm_calls": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 32,
+          "description": "Maximum total language model API calls budget"
+        },
+        "batch_size": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 4,
+          "description": "Batch size for evaluation - larger = better signal but slower"
+        },
+        "max_rollouts": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum total rollouts budget - hard constraint on evaluations"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "default": 0.9,
+          "description": "Temperature for LLM-based mutations. Higher = more creative, lower = more conservative."
+        },
+        "track_stats": {
+          "type": "boolean",
+          "default": true,
+          "description": "Track detailed optimization statistics. Set false to reduce memory overhead."
+        },
+        "track_best_outputs": {
+          "type": "boolean",
+          "default": false,
+          "description": "Track best outputs for inference-time search"
+        },
+        "feedback_models": {
+          "$ref": "#/$defs/FeedbackModelOverrides",
+          "description": "Feedback models for optimization evaluation"
+        }
+      }
+    },
+    "OptimizationSection": {
+      "type": "object",
+      "description": "Optimization configuration section",
+      "additionalProperties": false,
+      "properties": {
+        "defaults": {
+          "$ref": "#/$defs/OptimizationSettings",
+          "description": "Default optimization settings used for all tasks unless overridden"
+        },
+        "tasks": {
+          "type": "object",
+          "description": "Per-task optimization overrides keyed by task name",
+          "additionalProperties": {
+            "$ref": "#/$defs/OptimizationSettings"
+          }
+        }
+      }
+    },
+    "TaskConfig": {
+      "type": "object",
+      "description": "Task-specific configuration",
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "type": "string",
+          "description": "Path to JSON schema file for task output. Supports ~ and $ENV expansion."
+        },
+        "examples": {
+          "type": "string",
+          "description": "Path to directory containing example input/output pairs. Supports ~ and $ENV expansion."
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the extraction task"
+        },
+        "include_timestamp": {
+          "type": "boolean",
+          "default": false,
+          "description": "Add current date/time to the model's context"
+        }
+      }
+    }
+  }
+}
